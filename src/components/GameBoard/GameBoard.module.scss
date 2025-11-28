@@ -1,0 +1,57 @@
+:local {
+  .wordBoard {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 40px;
+    perspective: 1000px; /* Нужно для 3D эффекта переворота */
+  }
+
+  .letterBox {
+    width: 60px;
+    height: 70px;
+    background: #101010; /* Темный фон закрытой буквы */
+    border: 2px solid #e0e1dd;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 2.5rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    user-select: none;
+
+    /* Скрываем букву по умолчанию */
+    color: transparent;
+
+    /* Настройка анимации */
+    transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    transform-style: preserve-3d;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+
+    /* Состояние открытой буквы */
+    &.open {
+      background: #e0e1dd; /* Светлый фон */
+      color: #0d1b2a; /* Темный текст */
+      border-color: #fca311;
+      transform: rotateY(360deg); /* Полный переворот */
+      box-shadow: 0 0 15px rgba(252, 163, 17, 0.4);
+    }
+  }
+
+  /* Адаптив для мобильных устройств */
+  @media (max-width: 600px) {
+    .wordBoard {
+      gap: 6px;
+    }
+
+    .letterBox {
+      width: 40px;
+      height: 50px;
+      font-size: 1.8rem;
+      border-width: 1px;
+    }
+  }
+}

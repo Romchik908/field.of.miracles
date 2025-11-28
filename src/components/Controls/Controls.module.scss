@@ -1,0 +1,70 @@
+:local {
+  .controlsArea {
+    width: 100%;
+    text-align: center;
+    /* Увеличили высоту, чтобы сообщения в 2 строки помещались без сдвига верстки */
+    min-height: 130px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+  }
+
+  .statusMessage {
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+    color: #fca311;
+    font-weight: bold;
+    min-height: 1.5em;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    transition: opacity 0.3s ease;
+  }
+
+  .inputGroup {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 15px 25px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .keyboardHint {
+    color: #e0e1dd;
+    font-size: 1.1rem;
+    margin-top: 5px;
+    animation: pulse 2s infinite;
+    text-align: center;
+    line-height: 1.4;
+
+    b {
+      color: #fca311;
+    }
+  }
+
+  @keyframes pulse {
+    0% {
+      opacity: 0.6;
+    }
+    50% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0.6;
+    }
+  }
+}

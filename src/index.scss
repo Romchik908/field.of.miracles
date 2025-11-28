@@ -1,0 +1,20 @@
+body {
+  margin: 0;
+  background-color: #0d1b2a;
+  color: #e0e1dd;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Скроллбар для красоты (опционально) */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0d1b2a;
+}
+::-webkit-scrollbar-thumb {
+  background: #415a77;
+  border-radius: 4px;
+}
