@@ -29,8 +29,6 @@ export const SpinAnimation: React.FC<Props> = ({
     };
   }, [onSpinStart, onAnimationEnd]);
 
-  // Формируем объект стилей с CSS-переменными
-  // TypeScript может ругаться на кастомные свойства, поэтому приводим к any или React.CSSProperties
   const customStyles = {
     '--start-top': `${startPos.top}px`,
     '--start-left': `${startPos.left}px`,

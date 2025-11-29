@@ -1,7 +1,7 @@
 import React from 'react';
 import { Wheel } from '../Wheel/Wheel';
 import { useGameContext } from '../../context/GameContext';
-import styles from './DrumSection.module.scss'; // <-- Свои стили
+import styles from './DrumSection.module.scss';
 
 interface DrumSectionProps {
   canSpin: boolean;

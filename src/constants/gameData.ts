@@ -1,6 +1,5 @@
 import type { Player, Question } from "../types";
 
-// Данные для 4-х раундов (3 отборочных + 1 финал)
 export const gameQuestions: Question[] = [
   { question: "Раунд 1. Структурированный набор данных", word: "МАССИВ" },
   { question: "Раунд 2. Процесс преобразования кода", word: "КОМПИЛЯЦИЯ" },
@@ -8,7 +7,6 @@ export const gameQuestions: Question[] = [
   { question: "ФИНАЛ. Главный инструмент программиста", word: "КЛАВИАТУРА" },
 ];
 
-// 9 Игроков + заглушки аватарок (используем сервис dicebear для генерации)
 export const initialPlayers: Player[] = [
   // Тройка 1
   { id: 1, name: "Кот Матроскин", score: 0, avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" },

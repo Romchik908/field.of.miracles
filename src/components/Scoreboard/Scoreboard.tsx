@@ -25,15 +25,12 @@ export const Scoreboard: React.FC<Props> = ({ players, activePlayerIndex, elimin
             `}
           >
             <span className={styles.name}>{player.name}</span>
-
             <img
-              // ДОБАВИЛИ ID: player-avatar-0, player-avatar-1 и т.д.
               id={`player-avatar-${index}`}
               src={player.avatar}
               alt={player.name}
               className={styles.avatar}
             />
-
             <div className={styles.scoreWrapper}>
               <span className={styles.score}>{player.score}</span>
             </div>

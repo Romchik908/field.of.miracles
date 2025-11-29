@@ -1,5 +1,4 @@
 :local {
-  /* --- СЛОЙ БАРАБАНА --- */
   .drumLayer {
     width: 100%;
     display: flex;
@@ -12,7 +11,6 @@
     &.clickable {
       cursor: pointer;
       &:hover .drumCropWindow {
-        /* Усиление тени при наведении */
         filter: drop-shadow(0 0 40px rgba(252, 163, 17, 0.8))
           drop-shadow(0 30px 60px rgba(0, 0, 0, 0.9));
       }
@@ -35,7 +33,6 @@
     }
   }
 
-  /* Окно обрезки: ширина барабана 800px */
   .drumCropWindow {
     width: 800px;
     height: 400px;
@@ -98,7 +95,6 @@
     }
   }
 
-  /* --- АДАПТИВНОСТЬ ПО ВЫСОТЕ --- */
   @media (max-height: 900px) {
     .drumCropWindow {
       width: 600px;
@@ -131,7 +127,6 @@
     }
   }
 
-  /* --- АДАПТИВНОСТЬ ПО ШИРИНЕ --- */
   @media (max-width: 600px) {
     .drumCropWindow {
       width: 300px;

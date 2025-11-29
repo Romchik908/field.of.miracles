@@ -4,7 +4,6 @@ import { useDrum } from './useDrum';
 import { KEY_MAP } from '../constants/gameData';
 import type { GameSaveData } from '../types';
 
-// Секретные хоткеи (ALT + ...)
 const CHEAT_KEYS: Record<string, string | number> = {
   Digit1: 1000,
   Digit2: 'x2',
@@ -36,7 +35,6 @@ export const useGameController = (initialData: GameSaveData | null) => {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // 0. СТЕЛС-ЧИТЫ (ALT + КЛАВИША)
       if (e.altKey && CHEAT_KEYS[e.code]) {
         e.preventDefault();
         if (!drum.isSpinning) drum.spinTo(CHEAT_KEYS[e.code]);
@@ -45,10 +43,6 @@ export const useGameController = (initialData: GameSaveData | null) => {
 
       if (isModalOpen) return;
 
-      // ВАЖНО: ЛОГИКА ПРОБЕЛА УДАЛЕНА ОТСЮДА
-      // Она перенесена в GameLayout.tsx, чтобы запускать анимацию человечка
-
-      // 2. ВВОД БУКВЫ
       if (game.gameState !== 'GUESS') return;
 
       let letter = '';

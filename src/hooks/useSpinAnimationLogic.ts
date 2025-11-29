@@ -8,7 +8,6 @@ export const useSpinAnimationLogic = () => {
   const [isAnimating, setIsAnimating] = useState(false);
   const [animStartPos, setAnimStartPos] = useState({ top: 0, left: 0, width: 70 });
 
-  // Условие доступности вращения
   const canSpin = gameData.gameState === 'SPIN' && !drumData.isSpinning && !isAnimating;
 
   const handleStartSpinning = () => {
@@ -31,7 +30,6 @@ export const useSpinAnimationLogic = () => {
     setIsAnimating(true);
   };
 
-  // Обработка ПРОБЕЛА
   useEffect(() => {
     const handleSpace = (e: KeyboardEvent) => {
       if (e.code === 'Space' && !modal.isOpen) {
@@ -49,7 +47,7 @@ export const useSpinAnimationLogic = () => {
     animStartPos,
     handleStartSpinning,
     canSpin,
-    onRealSpin: actions.spinDrum, // Прокидываем экшен
+    onRealSpin: actions.spinDrum,
     avatarUrl: gameData.players[gameData.activePlayerIndex]?.avatar,
   };
 };

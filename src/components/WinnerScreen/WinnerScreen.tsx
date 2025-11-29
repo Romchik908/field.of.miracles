@@ -23,7 +23,6 @@ export const WinnerScreen: React.FC<Props> = ({
 
   return (
     <div className={styles.container}>
-      {/* Конфетти на весь экран */}
       <Confetti
         width={width}
         height={height}
@@ -31,22 +30,17 @@ export const WinnerScreen: React.FC<Props> = ({
         gravity={0.15}
         colors={['#fca311', '#ffffff', '#e63946', '#457b9d']}
       />
-
       <div className={styles.card}>
         <div className={styles.title}>Победитель раунда</div>
-
         <div className={styles.avatarWrapper}>
           <div className={styles.glow} />
           <img src={winnerAvatar} alt={winnerName} className={styles.avatar} />
         </div>
-
         <div className={styles.name}>{winnerName}</div>
         <div className={styles.score}>{score} очков</div>
-
         <div className={styles.wordInfo}>
           Угадал слово: <b>{word}</b>
         </div>
-
         <Button onClick={onNext} use="primary" size="large">
           ПРОДОЛЖИТЬ
         </Button>

@@ -1,8 +1,8 @@
 import React from 'react';
-import { GameBoard } from '../GameBoard/GameBoard';
-import { Controls } from '../Controls/Controls';
 import { useGameContext } from '../../context/GameContext';
-import styles from './CenterSection.module.scss'; // <-- Свои стили
+import { Controls } from '../Controls/Controls';
+import { GameBoard } from '../GameBoard/GameBoard';
+import styles from './CenterSection.module.scss';
 
 export const CenterSection: React.FC = () => {
   const { controller } = useGameContext();
@@ -18,10 +18,8 @@ export const CenterSection: React.FC = () => {
           isInteractive={gameData.gameState === 'PLUS_SELECTION'}
         />
       </div>
-
       <div className={styles.bottomSection}>
         <div className={styles.questionBox}>{gameData.question}</div>
-
         <Controls
           gameState={gameData.gameState}
           message={gameData.message}

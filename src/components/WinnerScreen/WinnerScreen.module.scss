@@ -5,9 +5,9 @@
     left: 0;
     width: 100vw;
     height: 100vh;
-    z-index: 9999; /* Поверх всего */
-    background: rgba(13, 27, 42, 0.95); /* Сильное затемнение фона */
-    backdrop-filter: blur(10px); /* Эффект матового стекла */
+    z-index: 9999;
+    background: rgba(13, 27, 42, 0.95);
+    backdrop-filter: blur(10px);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -23,9 +23,8 @@
     padding: 40px 60px;
     border-radius: 30px;
     border: 4px solid #fca311;
-    box-shadow: 0 0 50px rgba(252, 163, 17, 0.5); /* Золотое свечение */
+    box-shadow: 0 0 50px rgba(252, 163, 17, 0.5);
 
-    /* Анимация появления (выпрыгивает) */
     animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
     transform: scale(0.5);
     opacity: 0;
@@ -56,7 +55,6 @@
     position: relative;
   }
 
-  /* Корона или свечение за аватаркой */
   .glow {
     position: absolute;
     top: 50%;
@@ -80,7 +78,7 @@
 
   .score {
     font-size: 1.8rem;
-    color: #fca311; /* Золотой цвет очков */
+    color: #fca311;
     font-weight: bold;
     margin-bottom: 30px;
   }

@@ -1,9 +1,8 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useGameController } from '../hooks/useGameController';
-import { loadGame, saveGame, clearGame } from '../utils/storage';
 import type { GameSaveData } from '../types';
+import { clearGame, loadGame, saveGame } from '../utils/storage';
 
-// Тип контекста
 interface GameContextType {
   controller: ReturnType<typeof useGameController>;
   appState: 'WELCOME' | 'GAME' | 'MANUAL_SETUP';
@@ -18,17 +17,11 @@ const GameContext = createContext<GameContextType | null>(null);
 
 export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [appState, setAppState] = useState<'WELCOME' | 'GAME' | 'MANUAL_SETUP'>('WELCOME');
-
-  // Состояние для инициализации игры (null = дефолт)
   const [initialData, setInitialData] = useState<GameSaveData | null>(null);
-
-  // Инициализируем контроллер с данными (если есть)
   const controller = useGameController(initialData);
 
-  // --- АВТОСОХРАНЕНИЕ ---
   useEffect(() => {
     if (appState === 'GAME') {
-      // Собираем данные из контроллера для сохранения
       const dataToSave: GameSaveData = {
         roundIndex: controller.rawState.roundIndex,
         allPlayers: controller.rawState.allPlayers,
@@ -42,11 +35,11 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       };
       saveGame(dataToSave);
     }
-  }, [controller.rawState, appState]); // Сохраняем при любом изменении стейта
+  }, [controller.rawState, appState]);
 
   const startNewGame = () => {
     clearGame();
-    setInitialData(null); // Сброс в дефолт
+    setInitialData(null);
     setAppState('GAME');
   };
 
@@ -59,7 +52,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const startManualGame = (data: GameSaveData) => {
-    clearGame(); // Чистим старое автосохранение
+    clearGame();
     setInitialData(data);
     setAppState('GAME');
   };

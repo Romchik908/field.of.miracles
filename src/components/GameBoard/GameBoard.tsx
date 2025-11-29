@@ -8,7 +8,12 @@ interface Props {
   isInteractive?: boolean;
 }
 
-export const GameBoard: React.FC<Props> = ({ word, guessedLetters, onLetterClick, isInteractive }) => {
+export const GameBoard: React.FC<Props> = ({
+  word,
+  guessedLetters,
+  onLetterClick,
+  isInteractive,
+}) => {
   return (
     <div className={styles.wordBoard}>
       {word.split('').map((char, i) => {
@@ -16,7 +21,6 @@ export const GameBoard: React.FC<Props> = ({ word, guessedLetters, onLetterClick
 
         return (
           <div
-            // ВАЖНО: word в ключе сбрасывает компонент при смене слова
             key={`${word}-${i}`}
             className={`${styles.letterBox} ${isOpen ? styles.open : ''}`}
             onClick={() => isInteractive && !isOpen && onLetterClick?.(i)}

@@ -1,5 +1,5 @@
-import React from 'react';
 import { Button, Modal, Spinner } from '@skbkontur/react-ui';
+import React from 'react';
 import { useGameContext } from '../../context/GameContext';
 import { Casket } from '../Casket/Casket';
 import styles from './GameModals.module.scss';
@@ -10,7 +10,6 @@ export const GameModals: React.FC = () => {
 
   if (!modal.isOpen) return null;
 
-  // WIN обрабатывается отдельно
   if (modal.type === 'WIN') return null;
 
   const renderContent = () => {

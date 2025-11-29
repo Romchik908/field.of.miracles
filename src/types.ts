@@ -4,7 +4,7 @@ export type GameState =
   | 'PRIZE_DECISION'
   | 'PLUS_SELECTION'
   | 'PHONE_CALL'
-  | 'CASKET_SELECTION'; // <-- Новое состояние
+  | 'CASKET_SELECTION';
 
 export interface Player {
   id: number;

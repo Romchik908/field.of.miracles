@@ -11,7 +11,6 @@
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
     transition: transform 0.2s;
 
-    /* Состояние "Закрыто" */
     background: linear-gradient(to bottom, #8b4513, #cd853f);
     cursor: pointer;
 
@@ -20,7 +19,6 @@
     }
   }
 
-  /* Состояние "Открыто" (результат показан) */
   .disabled {
     background: #f0f0f0;
     cursor: default;

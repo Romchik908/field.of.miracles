@@ -10,17 +10,12 @@ interface Props {
 export const Controls: React.FC<Props> = ({ gameState, message }) => {
   return (
     <div className={styles.controlsArea}>
-      {/* Сообщение от игры (кто ходит, сколько очков) */}
       <div className={styles.statusMessage}>{message}</div>
-
-      {/* Подсказка для стадии ВРАЩЕНИЯ */}
       {gameState === 'SPIN' && (
         <div className={styles.keyboardHint}>
           Нажмите <b>ПРОБЕЛ</b> или кликните по барабану
         </div>
       )}
-
-      {/* Подсказка для стадии УГАДЫВАНИЯ */}
       {gameState === 'GUESS' && (
         <div className={styles.keyboardHint}>
           Нажмите букву на клавиатуре...
