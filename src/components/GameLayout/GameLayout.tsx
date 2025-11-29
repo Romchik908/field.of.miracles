@@ -10,11 +10,38 @@ import styles from './GameLayout.module.scss';
 
 export const GameLayout: React.FC = () => {
   const { gameData, drumData, actions, modal } = useGameContext();
-
   const modalTextStyle = { color: '#333' };
-
-  // Проверка: можно ли сейчас крутить барабан (нужно для кликабельности)
   const canSpin = gameData.gameState === 'SPIN' && !drumData.isSpinning;
+
+  // Вспомогательный компонент Шкатулки (можно вынести в отдельный файл, но здесь удобнее)
+  const Casket = ({ onClick, result }: { onClick: () => void; result: 'win' | 'empty' | null }) => {
+    const isDisabled = result !== null; // Если уже открыли - блокируем
+    // Иконка внутри (если открыто)
+    const content = result === 'win' ? '💰' : result === 'empty' ? '💨' : '?';
+
+    return (
+      <div
+        onClick={() => !isDisabled && onClick()}
+        style={{
+          width: '100px',
+          height: '90px',
+          background: result ? '#f0f0f0' : 'linear-gradient(to bottom, #8B4513, #CD853F)',
+          border: '4px solid #5D4037',
+          borderRadius: '10px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: '40px',
+          cursor: isDisabled ? 'default' : 'pointer',
+          boxShadow: '0 5px 15px rgba(0,0,0,0.5)',
+          transition: 'transform 0.2s',
+          transform: isDisabled ? 'scale(1)' : 'scale(1.05)',
+        }}
+      >
+        {content}
+      </div>
+    );
+  };
 
   const renderModalContent = () => {
     switch (modal.type) {
@@ -23,7 +50,6 @@ export const GameLayout: React.FC = () => {
           <div style={modalTextStyle}>
             <Modal.Header>Победа!</Modal.Header>
             <Modal.Body>
-              {/* Выводим имя победителя и угаданное слово */}
               <p>
                 Победитель: <b>{modal.winnerName}</b>!
               </p>
@@ -45,14 +71,15 @@ export const GameLayout: React.FC = () => {
             <Modal.Header>Сектор ПРИЗ!</Modal.Header>
             <Modal.Body>
               <p>
-                Вы можете забрать приз и закончить игру (для текущего игрока), либо отказаться и продолжить угадывать
-                буквы.
+                Вы можете забрать приз и закончить игру (для текущего игрока), либо отказаться и
+                продолжить угадывать буквы.
               </p>
               <div style={{ fontSize: '50px', textAlign: 'center', margin: '20px 0' }}>🎁</div>
             </Modal.Body>
             <Modal.Footer panel>
-              {/* Кнопки с отступом и центрированием */}
-              <div style={{ display: 'flex', gap: '20px', justifyContent: 'center', width: '100%' }}>
+              <div
+                style={{ display: 'flex', gap: '20px', justifyContent: 'center', width: '100%' }}
+              >
                 <Button onClick={() => actions.prizeChoice(true)} use="primary" size="medium">
                   Забрать ПРИЗ
                 </Button>
@@ -88,6 +115,32 @@ export const GameLayout: React.FC = () => {
           </div>
         );
 
+      // --- НОВОЕ ОКНО: ШКАТУЛКИ ---
+      case 'CASKET':
+        return (
+          <div style={modalTextStyle}>
+            <Modal.Header>ДВЕ ШКАТУЛКИ!</Modal.Header>
+            <Modal.Body>
+              <div style={{ textAlign: 'center', marginBottom: 20 }}>
+                {modal.casketResult === 'win' && (
+                  <h3 style={{ color: 'green' }}>Поздравляем! Там деньги!</h3>
+                )}
+                {modal.casketResult === 'empty' && <h3 style={{ color: 'gray' }}>Увы, пусто...</h3>}
+                {!modal.casketResult && <p>Вы угадали 3 буквы подряд! Выберите шкатулку:</p>}
+              </div>
+
+              <div
+                style={{ display: 'flex', gap: '40px', justifyContent: 'center', padding: '20px' }}
+              >
+                {/* Левая шкатулка */}
+                <Casket onClick={actions.casketChoice} result={modal.casketResult} />
+                {/* Правая шкатулка */}
+                <Casket onClick={actions.casketChoice} result={modal.casketResult} />
+              </div>
+            </Modal.Body>
+          </div>
+        );
+
       default:
         return null;
     }
@@ -95,42 +148,37 @@ export const GameLayout: React.FC = () => {
 
   return (
     <div className={styles.appContainer}>
-      {/* 1. СЛОЙ ИГРОКОВ */}
       <div className={styles.scoreboardLayer}>
         <Scoreboard
           players={gameData.players}
           activePlayerIndex={gameData.activePlayerIndex}
-          // Передаем массив индексов выбывших игроков для стилизации
           eliminatedIndices={gameData.eliminatedPlayers}
         />
       </div>
 
-      {/* 2. СЛОЙ БАРАБАНА */}
       <div
         className={`${styles.drumLayer} ${canSpin ? styles.clickable : ''}`}
-        // Клик по барабану запускает вращение (альтернатива пробелу)
         onClick={() => canSpin && actions.spinDrum()}
       >
         <div className={styles.drumCropWindow}>
           <div className={styles.drumWrapper}>
-            <div className={styles.wheelContainer} style={{ transform: `rotate(${drumData.rotation}deg)` }}>
+            <div
+              className={styles.wheelContainer}
+              style={{ transform: `rotate(${drumData.rotation}deg)` }}
+            >
               <Wheel />
             </div>
           </div>
         </div>
-
         <div className={styles.arrow}>▼</div>
       </div>
 
-      {/* 3. ЦЕНТРАЛЬНЫЙ СЛОЙ */}
       <div className={styles.centerLayer}>
         <div className={styles.wordSection}>
           <GameBoard
             word={gameData.word}
             guessedLetters={gameData.guessedLetters}
-            // Обработчик для сектора "+"
             onLetterClick={actions.clickBoardLetter}
-            // Интерактивность только в режиме выбора буквы
             isInteractive={gameData.gameState === 'PLUS_SELECTION'}
           />
         </div>
@@ -138,18 +186,20 @@ export const GameLayout: React.FC = () => {
         <div className={styles.bottomSection}>
           <div className={styles.questionBox}>{gameData.question}</div>
 
-          <Controls gameState={gameData.gameState} message={gameData.message} onGuess={actions.guessLetter} />
+          <Controls
+            gameState={gameData.gameState}
+            message={gameData.message}
+            onGuess={actions.guessLetter}
+          />
         </div>
       </div>
 
-      {/* МОДАЛЬНЫЕ ОКНА */}
       {modal.isOpen && (
         <Modal onClose={() => {}} width={500}>
           {renderModalContent()}
         </Modal>
       )}
 
-      {/* ДЕБАГ ПАНЕЛЬ */}
       <DebugPanel />
     </div>
   );

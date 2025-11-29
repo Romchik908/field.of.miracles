@@ -1,9 +1,15 @@
-export type GameState = 'SPIN' | 'GUESS' | 'PRIZE_DECISION' | 'PLUS_SELECTION' | 'PHONE_CALL';
+export type GameState =
+  | 'SPIN'
+  | 'GUESS'
+  | 'PRIZE_DECISION'
+  | 'PLUS_SELECTION'
+  | 'PHONE_CALL'
+  | 'CASKET_SELECTION'; // <-- Новое состояние
 
 export interface Player {
-  id: number; // Уникальный ID
+  id: number;
   name: string;
-  avatar: string; // URL картинки
+  avatar: string;
   score: number;
 }
 
