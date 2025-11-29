@@ -4,7 +4,11 @@ import { useGameContext } from '../../context/GameContext';
 import styles from './DebugPanel.module.scss';
 
 export const DebugPanel: React.FC = () => {
-  const { actions, debug } = useGameContext();
+  // ИСПРАВЛЕНИЕ:
+  // Раньше было: const { actions, debug } = useGameContext();
+  // Теперь данные лежат внутри объекта controller
+  const { controller } = useGameContext();
+  const { actions, debug } = controller;
 
   const cheats = [
     { label: '1000', val: 1000 },

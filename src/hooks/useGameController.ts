@@ -2,20 +2,20 @@ import { useState, useEffect } from 'react';
 import { useGame } from './useGame';
 import { useDrum } from './useDrum';
 import { KEY_MAP } from '../constants/gameData';
+import type { GameSaveData } from '../types';
 
-export const useGameController = () => {
+export const useGameController = (initialData: GameSaveData | null) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState<'WIN' | 'PRIZE' | 'PHONE' | 'CASKET'>('WIN');
 
-  // Состояние для текста подсказки при звонке
   const [phoneHint, setPhoneHint] = useState('');
-
-  // Состояние результата шкатулки (победа или пусто)
   const [casketResult, setCasketResult] = useState<'win' | 'empty' | null>(null);
 
   const [isCheatAnimationEnabled, setIsCheatAnimationEnabled] = useState(true);
 
-  const game = useGame();
+  // ПЕРЕДАЕМ ДАННЫЕ В ХУК ИГРЫ
+  const game = useGame(initialData);
+
   const handleDrumStop = (sector: string | number) => game.handleSector(sector);
   const drum = useDrum(handleDrumStop);
 
@@ -25,13 +25,9 @@ export const useGameController = () => {
     else game.handleSector(sector);
   };
 
-  // Обработка клавиатуры
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Стелс-читы (Alt + ...)
-      // (Код читов опущен для краткости, так как он не влияет на ошибку, но вы можете оставить тот, что был раньше)
-      // Для примера оставим только базовые проверки:
-
+      if (e.altKey) return; // Стелс-читы обрабатываются в самом компоненте или тут, если добавить
       if (isModalOpen) return;
 
       if (e.code === 'Space') {
@@ -59,6 +55,7 @@ export const useGameController = () => {
       setModalType('WIN');
       setIsModalOpen(true);
     }
+    // CASKETS откроются через useEffect
   };
 
   const onLetterClick = (index: number) => {
@@ -101,48 +98,35 @@ export const useGameController = () => {
     drum.setCurrentSector(null);
   };
 
-  // --- ВОТ ЗДЕСЬ БЫЛА ОШИБКА (восстановлена логика звонка) ---
   useEffect(() => {
-    // 1. Приз
     if (game.gameState === 'PRIZE_DECISION') {
       setModalType('PRIZE');
       setIsModalOpen(true);
     }
-
-    // 2. Звонок другу
     if (game.gameState === 'PHONE_CALL') {
-      // Ищем буквы, которые еще не открыты
       const missingLetters = game.currentQuestion.word
         .split('')
         .filter((l) => !game.guessedLetters.includes(l));
-
-      // Выбираем случайную неоткрытую букву (или 'А', если вдруг массив пуст)
-      const randomMissing =
-        missingLetters.length > 0
-          ? missingLetters[Math.floor(Math.random() * missingLetters.length)]
-          : 'А';
-
-      // Друг может ошибиться (50% шанс)
+      const randomMissing = missingLetters.length > 0 ? missingLetters[0] : 'А';
       const hint =
         Math.random() > 0.5
           ? randomMissing
           : 'АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ'[Math.floor(Math.random() * 32)];
-
-      // ВОТ ЗДЕСЬ МЫ ИСПОЛЬЗУЕМ setPhoneHint
       setPhoneHint(hint);
       setModalType('PHONE');
       setIsModalOpen(true);
     }
-
-    // 3. Шкатулки
     if (game.gameState === 'CASKET_SELECTION') {
       setCasketResult(null);
       setModalType('CASKET');
       setIsModalOpen(true);
     }
-  }, [game.gameState]); // Зависимость только от gameState достаточно, данные внутри обновятся
+  }, [game.gameState]);
 
   return {
+    // Экспортируем rawState для сохранения
+    rawState: game.rawState,
+
     gameData: { ...game, question: game.currentQuestion.question, word: game.currentQuestion.word },
     drumData: { rotation: drum.rotation, isSpinning: drum.isSpinning },
     debug: {
@@ -163,7 +147,7 @@ export const useGameController = () => {
     modal: {
       isOpen: isModalOpen,
       type: modalType,
-      phoneHint, // Теперь переменная используется в UI
+      phoneHint,
       casketResult,
       winnerIndex: game.activePlayerIndex,
       winnerName: game.players[game.activePlayerIndex]?.name,

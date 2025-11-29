@@ -9,16 +9,19 @@ import { DebugPanel } from '../DebugPanel/DebugPanel';
 import styles from './GameLayout.module.scss';
 
 export const GameLayout: React.FC = () => {
-  const { gameData, drumData, actions, modal } = useGameContext();
+  // Получаем ВЕСЬ контроллер из контекста
+  const { controller } = useGameContext();
+
+  // Деструктурируем данные уже из контроллера
+  const { gameData, drumData, actions, modal } = controller;
+
   const modalTextStyle = { color: '#333' };
   const canSpin = gameData.gameState === 'SPIN' && !drumData.isSpinning;
 
-  // Вспомогательный компонент Шкатулки (можно вынести в отдельный файл, но здесь удобнее)
+  // Компонент шкатулки
   const Casket = ({ onClick, result }: { onClick: () => void; result: 'win' | 'empty' | null }) => {
-    const isDisabled = result !== null; // Если уже открыли - блокируем
-    // Иконка внутри (если открыто)
+    const isDisabled = result !== null;
     const content = result === 'win' ? '💰' : result === 'empty' ? '💨' : '?';
-
     return (
       <div
         onClick={() => !isDisabled && onClick()}
@@ -70,10 +73,7 @@ export const GameLayout: React.FC = () => {
           <div style={modalTextStyle}>
             <Modal.Header>Сектор ПРИЗ!</Modal.Header>
             <Modal.Body>
-              <p>
-                Вы можете забрать приз и закончить игру (для текущего игрока), либо отказаться и
-                продолжить угадывать буквы.
-              </p>
+              <p>Вы можете забрать приз и закончить игру, либо отказаться и продолжить.</p>
               <div style={{ fontSize: '50px', textAlign: 'center', margin: '20px 0' }}>🎁</div>
             </Modal.Body>
             <Modal.Footer panel>
@@ -115,7 +115,6 @@ export const GameLayout: React.FC = () => {
           </div>
         );
 
-      // --- НОВОЕ ОКНО: ШКАТУЛКИ ---
       case 'CASKET':
         return (
           <div style={modalTextStyle}>
@@ -128,13 +127,10 @@ export const GameLayout: React.FC = () => {
                 {modal.casketResult === 'empty' && <h3 style={{ color: 'gray' }}>Увы, пусто...</h3>}
                 {!modal.casketResult && <p>Вы угадали 3 буквы подряд! Выберите шкатулку:</p>}
               </div>
-
               <div
                 style={{ display: 'flex', gap: '40px', justifyContent: 'center', padding: '20px' }}
               >
-                {/* Левая шкатулка */}
                 <Casket onClick={actions.casketChoice} result={modal.casketResult} />
-                {/* Правая шкатулка */}
                 <Casket onClick={actions.casketChoice} result={modal.casketResult} />
               </div>
             </Modal.Body>

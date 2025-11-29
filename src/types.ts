@@ -17,3 +17,15 @@ export interface Question {
   question: string;
   word: string;
 }
+
+export interface GameSaveData {
+  roundIndex: number;
+  allPlayers: Player[];
+  finalists: Player[];
+  activePlayerLocalIndex: number;
+  guessedLetters: string[];
+  eliminatedLocalIndices: number[];
+  gameState: GameState;
+  currentSectorValue: string | number | null;
+  consecutiveGuesses: number;
+}
