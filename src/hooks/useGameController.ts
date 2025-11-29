@@ -38,10 +38,23 @@ const KEY_MAP: Record<string, string> = {
   Backquote: 'Ё',
 };
 
+// Секретные хоткеи (ALT + ...)
+const CHEAT_KEYS: Record<string, string | number> = {
+  Digit1: 1000,
+  Digit2: 'x2',
+  KeyP: 'П', // Alt + P = Приз
+  KeyB: 'БАНКРОТ', // Alt + B = Банкрот
+  KeyS: 'Ш', // Alt + S = Шанс (Звонок)
+  Equal: '+', // Alt + = Плюс
+};
+
 export const useGameController = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState<'WIN' | 'PRIZE' | 'PHONE'>('WIN');
   const [phoneHint, setPhoneHint] = useState('');
+
+  // Состояние чекбокса из дебаг-панели
+  const [isCheatAnimationEnabled, setIsCheatAnimationEnabled] = useState(true);
 
   const game = useGame();
 
@@ -51,30 +64,43 @@ export const useGameController = () => {
 
   const drum = useDrum(handleDrumStop);
 
+  // --- ЧИТ-ФУНКЦИЯ ---
   const cheatSector = (sector: string | number) => {
     if (drum.isSpinning) return;
-    game.handleSector(sector);
+
+    if (isCheatAnimationEnabled) {
+      // КРУТИМ КРАСИВО (для стелса или если галочка стоит)
+      drum.spinTo(sector);
+    } else {
+      // МГНОВЕННО (для быстрой отладки)
+      game.handleSector(sector);
+    }
   };
 
   // --- ОБРАБОТЧИК КЛАВИАТУРЫ ---
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Игнорируем ввод, если модалка открыта
+      // 0. СТЕЛС-ЧИТЫ (ALT + КЛАВИША)
+      // Работают ВСЕГДА с анимацией, чтобы зрители не спалили
+      if (e.altKey && CHEAT_KEYS[e.code]) {
+        e.preventDefault();
+        // Принудительно вызываем с анимацией
+        if (!drum.isSpinning) drum.spinTo(CHEAT_KEYS[e.code]);
+        return;
+      }
+
       if (isModalOpen) return;
 
-      // 1. ЛОГИКА ПРОБЕЛА (ВРАЩЕНИЕ)
+      // 1. ВРАЩЕНИЕ (ПРОБЕЛ)
       if (e.code === 'Space') {
-        // Предотвращаем скролл страницы при нажатии пробела
         e.preventDefault();
-
-        // Если сейчас стадия вращения и барабан стоит - крутим
         if (game.gameState === 'SPIN' && !drum.isSpinning) {
           drum.spin();
         }
         return;
       }
 
-      // 2. ЛОГИКА БУКВ (УГАДЫВАНИЕ)
+      // 2. ВВОД БУКВЫ
       if (game.gameState !== 'GUESS') return;
 
       let letter = '';
@@ -93,8 +119,7 @@ export const useGameController = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [game.gameState, isModalOpen, drum.isSpinning, game.guessedLetters]);
 
-  // --- ЛОГИКА ИГРЫ ---
-
+  // ... (Остальные функции без изменений: onGuessLetter, onLetterClick и т.д.) ...
   const onGuessLetter = (letter: string) => {
     const result = game.handleGuess(letter);
     if (result === 'WIN') {
@@ -135,7 +160,6 @@ export const useGameController = () => {
     drum.setCurrentSector(null);
   };
 
-  // Следим за изменением состояния для открытия модалок
   useEffect(() => {
     if (game.gameState === 'PRIZE_DECISION') {
       setModalType('PRIZE');
@@ -155,6 +179,11 @@ export const useGameController = () => {
   return {
     gameData: { ...game, question: game.currentQuestion.question, word: game.currentQuestion.word },
     drumData: { rotation: drum.rotation, isSpinning: drum.isSpinning },
+    // Передаем состояние чекбокса и сеттер наружу
+    debug: {
+      isCheatAnimationEnabled,
+      toggleCheatAnimation: () => setIsCheatAnimationEnabled((prev) => !prev),
+    },
     actions: {
       spinDrum: drum.spin,
       guessLetter: onGuessLetter,
@@ -169,7 +198,8 @@ export const useGameController = () => {
       isOpen: isModalOpen,
       type: modalType,
       phoneHint,
-      winnerIndex: game.activePlayerIndex,
+      winnerIndex: game.activePlayerIndex, // Индекс текущего победителя
+      winnerName: game.players[game.activePlayerIndex].name, // <--- ИМЯ ПОБЕДИТЕЛЯ
       word: game.currentQuestion.word,
     },
   };

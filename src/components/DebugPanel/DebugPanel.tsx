@@ -1,23 +1,29 @@
 import React from 'react';
-import { Button } from '@skbkontur/react-ui';
+import { Button, Checkbox } from '@skbkontur/react-ui';
 import { useGameContext } from '../../context/GameContext';
 
 export const DebugPanel: React.FC = () => {
-  const { actions } = useGameContext();
+  const { actions, debug } = useGameContext();
 
   const style: React.CSSProperties = {
     position: 'fixed',
     bottom: 10,
     right: 10,
-    background: 'rgba(0,0,0,0.8)',
-    padding: 10,
+    background: 'rgba(0,0,0,0.9)',
+    padding: 15,
     borderRadius: 8,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 10,
+    maxWidth: 320,
+    zIndex: 1000,
+    border: '1px solid #555',
+  };
+
+  const rowStyle: React.CSSProperties = {
     display: 'flex',
     gap: 5,
     flexWrap: 'wrap',
-    maxWidth: 300,
-    zIndex: 1000,
-    border: '1px solid #555',
   };
 
   const cheats = [
@@ -31,12 +37,22 @@ export const DebugPanel: React.FC = () => {
 
   return (
     <div style={style}>
-      <div style={{ width: '100%', color: '#aaa', fontSize: 12, marginBottom: 5 }}>DEBUG: Вызвать сектор</div>
-      {cheats.map((c) => (
-        <Button key={c.label} onClick={() => actions.cheatSector(c.val)} size="small">
-          {c.label}
-        </Button>
-      ))}
+      <div style={{ width: '100%', color: '#aaa', fontSize: 12 }}>DEBUG PANEL (Alt + Key для стелса)</div>
+
+      {/* Чекбокс для анимации */}
+      <div style={{ color: '#fff' }}>
+        <Checkbox checked={debug.isCheatAnimationEnabled} onValueChange={debug.toggleCheatAnimation}>
+          Включить анимацию при клике
+        </Checkbox>
+      </div>
+
+      <div style={rowStyle}>
+        {cheats.map((c) => (
+          <Button key={c.label} onClick={() => actions.cheatSector(c.val)} size="small">
+            {c.label}
+          </Button>
+        ))}
+      </div>
     </div>
   );
 };

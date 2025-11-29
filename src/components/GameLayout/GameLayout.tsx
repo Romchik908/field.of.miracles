@@ -23,13 +23,17 @@ export const GameLayout: React.FC = () => {
           <div style={modalTextStyle}>
             <Modal.Header>Победа!</Modal.Header>
             <Modal.Body>
+              {/* ИСПОЛЬЗУЕМ ИМЯ ИЗ КОНТЕКСТА */}
               <p>
-                Игрок {modal.winnerIndex + 1} угадал слово: <b>{modal.word}</b>
+                Победитель: <b>{modal.winnerName}</b>!
+              </p>
+              <p>
+                Слово: <b>{modal.word}</b>
               </p>
             </Modal.Body>
             <Modal.Footer>
               <Button onClick={actions.nextRound} use="primary">
-                Следующее слово
+                Далее
               </Button>
             </Modal.Footer>
           </div>
