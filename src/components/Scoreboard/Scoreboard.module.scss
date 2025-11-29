@@ -2,13 +2,12 @@
   .scoreboard {
     display: flex;
     flex-direction: column;
-    gap: 25px; /* Больше отступ между игроками */
+    gap: 25px; /* Отступ между карточками */
     padding: 10px;
   }
 
   .playerCard {
-    width: 140px; /* Карточка шире */
-    /* height: 180px; - убираем фикс. высоту, пусть растет от контента */
+    width: 140px;
     background: rgba(27, 38, 59, 0.9);
     border: 2px solid #415a77;
     border-radius: 15px;
@@ -23,7 +22,7 @@
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
     position: relative;
 
-    /* Активный игрок */
+    /* Стиль активного игрока (подсветка) */
     &.active {
       background: linear-gradient(135deg, #fca311 0%, #e63946 100%);
       color: #fff;
@@ -36,6 +35,19 @@
         border-color: #fff;
       }
     }
+
+    /* Стиль выбывшего игрока (черно-белый) */
+    &.eliminated {
+      filter: grayscale(100%); /* Полностью обесцветить */
+      opacity: 0.5; /* Сделать полупрозрачным */
+      transform: scale(0.9); /* Немного уменьшить */
+      border-color: #555;
+      box-shadow: none;
+
+      .name {
+        text-decoration: line-through; /* Зачеркнуть имя */
+      }
+    }
   }
 
   .name {
@@ -44,7 +56,7 @@
     text-align: center;
     margin-bottom: 10px;
     line-height: 1.2;
-    min-height: 2.4em; /* Резерв под 2 строки имени */
+    min-height: 2.4em; /* Место под 2 строки */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -59,6 +71,7 @@
     object-fit: cover;
     margin-bottom: 10px;
     background-clip: padding-box;
+    transition: border-color 0.3s;
   }
 
   .scoreWrapper {

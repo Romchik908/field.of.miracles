@@ -13,7 +13,7 @@ export const GameLayout: React.FC = () => {
 
   const modalTextStyle = { color: '#333' };
 
-  // Проверяем, можно ли сейчас вращать
+  // Проверка: можно ли сейчас крутить барабан (нужно для кликабельности)
   const canSpin = gameData.gameState === 'SPIN' && !drumData.isSpinning;
 
   const renderModalContent = () => {
@@ -23,7 +23,7 @@ export const GameLayout: React.FC = () => {
           <div style={modalTextStyle}>
             <Modal.Header>Победа!</Modal.Header>
             <Modal.Body>
-              {/* ИСПОЛЬЗУЕМ ИМЯ ИЗ КОНТЕКСТА */}
+              {/* Выводим имя победителя и угаданное слово */}
               <p>
                 Победитель: <b>{modal.winnerName}</b>!
               </p>
@@ -51,7 +51,7 @@ export const GameLayout: React.FC = () => {
               <div style={{ fontSize: '50px', textAlign: 'center', margin: '20px 0' }}>🎁</div>
             </Modal.Body>
             <Modal.Footer panel>
-              {/* Центрирование кнопок */}
+              {/* Кнопки с отступом и центрированием */}
               <div style={{ display: 'flex', gap: '20px', justifyContent: 'center', width: '100%' }}>
                 <Button onClick={() => actions.prizeChoice(true)} use="primary" size="medium">
                   Забрать ПРИЗ
@@ -95,13 +95,20 @@ export const GameLayout: React.FC = () => {
 
   return (
     <div className={styles.appContainer}>
+      {/* 1. СЛОЙ ИГРОКОВ */}
       <div className={styles.scoreboardLayer}>
-        <Scoreboard players={gameData.players} activePlayerIndex={gameData.activePlayerIndex} />
+        <Scoreboard
+          players={gameData.players}
+          activePlayerIndex={gameData.activePlayerIndex}
+          // Передаем массив индексов выбывших игроков для стилизации
+          eliminatedIndices={gameData.eliminatedPlayers}
+        />
       </div>
 
-      {/* БАРАБАН */}
+      {/* 2. СЛОЙ БАРАБАНА */}
       <div
         className={`${styles.drumLayer} ${canSpin ? styles.clickable : ''}`}
+        // Клик по барабану запускает вращение (альтернатива пробелу)
         onClick={() => canSpin && actions.spinDrum()}
       >
         <div className={styles.drumCropWindow}>
@@ -113,16 +120,17 @@ export const GameLayout: React.FC = () => {
         </div>
 
         <div className={styles.arrow}>▼</div>
-
-        {/* Подсказка spinHint УДАЛЕНА отсюда */}
       </div>
 
+      {/* 3. ЦЕНТРАЛЬНЫЙ СЛОЙ */}
       <div className={styles.centerLayer}>
         <div className={styles.wordSection}>
           <GameBoard
             word={gameData.word}
             guessedLetters={gameData.guessedLetters}
+            // Обработчик для сектора "+"
             onLetterClick={actions.clickBoardLetter}
+            // Интерактивность только в режиме выбора буквы
             isInteractive={gameData.gameState === 'PLUS_SELECTION'}
           />
         </div>
@@ -134,12 +142,14 @@ export const GameLayout: React.FC = () => {
         </div>
       </div>
 
+      {/* МОДАЛЬНЫЕ ОКНА */}
       {modal.isOpen && (
         <Modal onClose={() => {}} width={500}>
           {renderModalContent()}
         </Modal>
       )}
 
+      {/* ДЕБАГ ПАНЕЛЬ */}
       <DebugPanel />
     </div>
   );
