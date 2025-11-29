@@ -1,22 +1,22 @@
 :local {
   .scoreboard {
     display: flex;
-    flex-direction: column; /* Вертикальный список */
-    gap: 20px;
+    flex-direction: column;
+    gap: 25px; /* Больше отступ между игроками */
     padding: 10px;
   }
 
   .playerCard {
-    width: 90px;
-    height: 90px;
-    border-radius: 50%; /* Делаем круг */
-    background: #1b263b;
-    border: 3px solid #415a77;
+    width: 140px; /* Карточка шире */
+    /* height: 180px; - убираем фикс. высоту, пусть растет от контента */
+    background: rgba(27, 38, 59, 0.9);
+    border: 2px solid #415a77;
+    border-radius: 15px;
 
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    padding: 15px 10px;
 
     color: #e0e1dd;
     transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -25,24 +25,50 @@
 
     /* Активный игрок */
     &.active {
-      background: #fca311;
-      color: #0d1b2a;
+      background: linear-gradient(135deg, #fca311 0%, #e63946 100%);
+      color: #fff;
       border-color: #fff;
-      transform: scale(1.15); /* Чуть увеличиваем */
-      box-shadow: 0 0 20px rgba(252, 163, 17, 0.6);
+      transform: scale(1.1);
+      box-shadow: 0 0 25px rgba(252, 163, 17, 0.6);
       z-index: 10;
-    }
 
-    /* Подпись "Игрок N" */
-    span:first-child {
-      font-size: 0.8rem;
-      opacity: 0.8;
-      margin-bottom: 2px;
+      .avatar {
+        border-color: #fff;
+      }
     }
   }
 
-  .score {
-    font-size: 1.4rem;
+  .name {
+    font-size: 0.9rem;
     font-weight: bold;
+    text-align: center;
+    margin-bottom: 10px;
+    line-height: 1.2;
+    min-height: 2.4em; /* Резерв под 2 строки имени */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .avatar {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background-color: #fff;
+    border: 3px solid #415a77;
+    object-fit: cover;
+    margin-bottom: 10px;
+    background-clip: padding-box;
+  }
+
+  .scoreWrapper {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 5px 15px;
+    border-radius: 20px;
+  }
+
+  .score {
+    font-size: 1.2rem;
+    font-weight: 800;
   }
 }

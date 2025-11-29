@@ -1,13 +1,9 @@
-// Добавляем новые состояния
-export type GameState =
-  | 'SPIN' // Вращение
-  | 'GUESS' // Ввод буквы
-  | 'PRIZE_DECISION' // Игрок решает: приз или игра
-  | 'PLUS_SELECTION' // Игрок должен кликнуть на закрытую букву
-  | 'PHONE_CALL'; // Идет "звонок" другу
+export type GameState = 'SPIN' | 'GUESS' | 'PRIZE_DECISION' | 'PLUS_SELECTION' | 'PHONE_CALL';
 
 export interface Player {
-  id: number;
+  id: number; // Уникальный ID
+  name: string;
+  avatar: string; // URL картинки
   score: number;
 }
 

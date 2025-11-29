@@ -1,6 +1,6 @@
 import React from 'react';
-import type { Player } from '../../types';
 import styles from './Scoreboard.module.scss';
+import type { Player } from '../../types';
 
 interface Props {
   players: Player[];
@@ -10,11 +10,18 @@ interface Props {
 export const Scoreboard: React.FC<Props> = ({ players, activePlayerIndex }) => {
   return (
     <div className={styles.scoreboard}>
-      <h3>Игроки</h3>
       {players.map((player, index) => (
         <div key={player.id} className={`${styles.playerCard} ${index === activePlayerIndex ? styles.active : ''}`}>
-          <span>Игрок {player.id}</span>
-          <span className={styles.score}>{player.score}</span>
+          {/* Имя сверху */}
+          <span className={styles.name}>{player.name}</span>
+
+          {/* Аватарка по центру */}
+          <img src={player.avatar} alt={player.name} className={styles.avatar} />
+
+          {/* Очки снизу */}
+          <div className={styles.scoreWrapper}>
+            <span className={styles.score}>{player.score}</span>
+          </div>
         </div>
       ))}
     </div>
