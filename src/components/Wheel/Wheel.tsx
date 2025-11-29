@@ -11,7 +11,7 @@ const SECTOR_ANGLE = 360 / drumSectors.length; // 9 градусов
 
 export const Wheel: React.FC = () => {
   // Функция для создания пути сектора (кусочка пирога)
-  const createSectorPath = (index: number) => {
+  const createSectorPath = () => {
     const angle = (2 * Math.PI) / drumSectors.length;
     // Сдвигаем углы, чтобы сектор был центрирован относительно 0 градусов
     const startAngle = -angle / 2;
@@ -43,7 +43,7 @@ export const Wheel: React.FC = () => {
         return (
           <g key={i} transform={`rotate(${i * SECTOR_ANGLE})`}>
             {/* Сам сектор (треугольник/дуга) */}
-            <path d={createSectorPath(i)} fill={bgColor} stroke="#ccc" strokeWidth="1" />
+            <path d={createSectorPath()} fill={bgColor} stroke="#ccc" strokeWidth="1" />
 
             {/* Текст значения */}
             <text
