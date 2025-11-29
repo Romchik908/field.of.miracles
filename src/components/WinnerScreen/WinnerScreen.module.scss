@@ -1,0 +1,114 @@
+:local {
+  .container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 9999; /* Поверх всего */
+    background: rgba(13, 27, 42, 0.95); /* Сильное затемнение фона */
+    backdrop-filter: blur(10px); /* Эффект матового стекла */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Segoe UI', sans-serif;
+  }
+
+  .card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: linear-gradient(135deg, #1b263b 0%, #0d1b2a 100%);
+    padding: 40px 60px;
+    border-radius: 30px;
+    border: 4px solid #fca311;
+    box-shadow: 0 0 50px rgba(252, 163, 17, 0.5); /* Золотое свечение */
+
+    /* Анимация появления (выпрыгивает) */
+    animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    transform: scale(0.5);
+    opacity: 0;
+  }
+
+  .title {
+    font-size: 1.5rem;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: #8d99ae;
+    margin-bottom: 20px;
+  }
+
+  .avatarWrapper {
+    position: relative;
+    margin-bottom: 25px;
+  }
+
+  .avatar {
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 6px solid #fff;
+    background-color: #fff;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+    z-index: 2;
+    position: relative;
+  }
+
+  /* Корона или свечение за аватаркой */
+  .glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 220px;
+    height: 220px;
+    background: radial-gradient(circle, rgba(252, 163, 17, 0.8) 0%, transparent 70%);
+    z-index: 1;
+    animation: spin 10s linear infinite;
+  }
+
+  .name {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #fff;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    margin-bottom: 5px;
+    text-align: center;
+  }
+
+  .score {
+    font-size: 1.8rem;
+    color: #fca311; /* Золотой цвет очков */
+    font-weight: bold;
+    margin-bottom: 30px;
+  }
+
+  .wordInfo {
+    margin-bottom: 30px;
+    font-size: 1.2rem;
+    color: #ccc;
+
+    b {
+      color: #fff;
+      letter-spacing: 1px;
+    }
+  }
+
+  @keyframes popIn {
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  @keyframes spin {
+    from {
+      transform: translate(-50%, -50%) rotate(0deg);
+    }
+    to {
+      transform: translate(-50%, -50%) rotate(360deg);
+    }
+  }
+}

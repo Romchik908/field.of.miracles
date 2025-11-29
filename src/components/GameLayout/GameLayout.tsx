@@ -6,13 +6,12 @@ import { GameBoard } from '../GameBoard/GameBoard';
 import { Controls } from '../Controls/Controls';
 import { useGameContext } from '../../context/GameContext';
 import { DebugPanel } from '../DebugPanel/DebugPanel';
+import { WinnerScreen } from '../WinnerScreen/WinnerScreen'; // Импортируем экран победы
 import styles from './GameLayout.module.scss';
 
 export const GameLayout: React.FC = () => {
-  // Получаем ВЕСЬ контроллер из контекста
+  // Получаем контроллер из контекста
   const { controller } = useGameContext();
-
-  // Деструктурируем данные уже из контроллера
   const { gameData, drumData, actions, modal } = controller;
 
   const modalTextStyle = { color: '#333' };
@@ -22,6 +21,7 @@ export const GameLayout: React.FC = () => {
   const Casket = ({ onClick, result }: { onClick: () => void; result: 'win' | 'empty' | null }) => {
     const isDisabled = result !== null;
     const content = result === 'win' ? '💰' : result === 'empty' ? '💨' : '?';
+
     return (
       <div
         onClick={() => !isDisabled && onClick()}
@@ -46,34 +46,19 @@ export const GameLayout: React.FC = () => {
     );
   };
 
+  // Рендер контента для стандартных модалок (Приз, Звонок, Шкатулки)
+  // WIN здесь больше нет, он обрабатывается отдельно
   const renderModalContent = () => {
     switch (modal.type) {
-      case 'WIN':
-        return (
-          <div style={modalTextStyle}>
-            <Modal.Header>Победа!</Modal.Header>
-            <Modal.Body>
-              <p>
-                Победитель: <b>{modal.winnerName}</b>!
-              </p>
-              <p>
-                Слово: <b>{modal.word}</b>
-              </p>
-            </Modal.Body>
-            <Modal.Footer>
-              <Button onClick={actions.nextRound} use="primary">
-                Далее
-              </Button>
-            </Modal.Footer>
-          </div>
-        );
-
       case 'PRIZE':
         return (
           <div style={modalTextStyle}>
             <Modal.Header>Сектор ПРИЗ!</Modal.Header>
             <Modal.Body>
-              <p>Вы можете забрать приз и закончить игру, либо отказаться и продолжить.</p>
+              <p>
+                Вы можете забрать приз и закончить игру (для текущего игрока), либо отказаться и
+                продолжить угадывать буквы.
+              </p>
               <div style={{ fontSize: '50px', textAlign: 'center', margin: '20px 0' }}>🎁</div>
             </Modal.Body>
             <Modal.Footer panel>
@@ -144,6 +129,20 @@ export const GameLayout: React.FC = () => {
 
   return (
     <div className={styles.appContainer}>
+      {/* --- ПОЛНОЭКРАННЫЙ ОВЕРЛЕЙ ПОБЕДЫ --- */}
+      {modal.isOpen && modal.type === 'WIN' && (
+        <WinnerScreen
+          winnerName={modal.winnerName}
+          // Находим игрока в списке, чтобы взять его аватар и очки
+          winnerAvatar={gameData.players.find((p) => p.name === modal.winnerName)?.avatar}
+          score={gameData.players.find((p) => p.name === modal.winnerName)?.score || 0}
+          word={modal.word}
+          onNext={actions.nextRound}
+        />
+      )}
+
+      {/* --- ОСНОВНОЙ ИНТЕРФЕЙС ИГРЫ --- */}
+
       <div className={styles.scoreboardLayer}>
         <Scoreboard
           players={gameData.players}
@@ -190,12 +189,15 @@ export const GameLayout: React.FC = () => {
         </div>
       </div>
 
-      {modal.isOpen && (
+      {/* --- ОБЫЧНЫЕ МОДАЛКИ (Приз, Телефон, Шкатулки) --- */}
+      {/* Рендерим только если открыто И тип не WIN */}
+      {modal.isOpen && modal.type !== 'WIN' && (
         <Modal onClose={() => {}} width={500}>
           {renderModalContent()}
         </Modal>
       )}
 
+      {/* Панель отладки */}
       <DebugPanel />
     </div>
   );
