@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useState, useCallback } from 'react';
 import { drumSectors } from '../constants/gameData';
 
 export const useDrum = (onStop: (sector: string | number) => void) => {
@@ -12,36 +12,31 @@ export const useDrum = (onStop: (sector: string | number) => void) => {
     setIsSpinning(true);
     setCurrentSector(null);
 
-    // 1. Генерируем случайное вращение
-    // От 5 до 10 полных оборотов + случайный угол остановки
-    const randomSpins = Math.floor(Math.random() * 5) + 5;
-    const randomAngle = Math.floor(Math.random() * 360);
+    // --- ИЗМЕНЕНИЕ ЗДЕСЬ ---
+    // Было: Math.floor(Math.random() * 3) + 2; (от 2 до 4 оборотов)
+    // Стало: от 1 до 2 оборотов.
+    // Барабан сделает всего 1 или 2 полных круга за 5 секунд.
+    const randomSpins = Math.floor(Math.random() * 2) + 1;
 
-    // Прибавляем к текущему, чтобы вращение было плавным и продолжалось, а не сбрасывалось
+    const randomAngle = Math.floor(Math.random() * 360);
     const newRotation = rotation + randomSpins * 360 + randomAngle;
 
     setRotation(newRotation);
 
-    // 2. Ждем окончания анимации CSS (5 секунд)
+    // Таймер остается 5 секунд (5000мс), чтобы анимация была медленной и плавной
     setTimeout(() => {
       setIsSpinning(false);
 
-      // 3. Вычисляем выпавший сектор
       const anglePerSector = 360 / drumSectors.length;
       const normalizedRotation = newRotation % 360;
 
-      // Формула расчета индекса:
-      // (360 - normalizedRotation) -> инвертируем, так как вращение по часовой, а массив секторов тоже по часовой (относительно стрелки колесо движется против)
-      // + 180 -> ВАЖНО: сдвигаем точку отсчета на 180 градусов, так как стрелка теперь СНИЗУ
-      // + (anglePerSector / 2) -> сдвигаем на пол-сектора, чтобы определять центр сектора, а не край
+      // Формула для стрелки СНИЗУ (+180 градусов)
       const effectiveAngle = (360 - normalizedRotation + 180 + anglePerSector / 2) % 360;
 
       const pointerIndex = Math.floor(effectiveAngle / anglePerSector);
-
       const sector = drumSectors[pointerIndex];
-      setCurrentSector(sector);
 
-      // Передаем результат в контроллер игры
+      setCurrentSector(sector);
       onStop(sector);
     }, 5000);
   }, [rotation, isSpinning, onStop]);
