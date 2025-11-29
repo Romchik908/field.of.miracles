@@ -1,20 +1,18 @@
 import React from 'react';
-import styles from './Scoreboard.module.scss';
 import type { Player } from '../../types';
+import styles from './Scoreboard.module.scss';
 
 interface Props {
   players: Player[];
   activePlayerIndex: number;
-  eliminatedIndices: number[]; // Добавили проп
+  eliminatedIndices: number[];
 }
 
 export const Scoreboard: React.FC<Props> = ({ players, activePlayerIndex, eliminatedIndices }) => {
   return (
     <div className={styles.scoreboard}>
       {players.map((player, index) => {
-        // Проверяем, выбыл ли игрок
         const isEliminated = eliminatedIndices.includes(index);
-        // Проверяем, активен ли (только если не выбыл)
         const isActive = !isEliminated && index === activePlayerIndex;
 
         return (
@@ -28,7 +26,13 @@ export const Scoreboard: React.FC<Props> = ({ players, activePlayerIndex, elimin
           >
             <span className={styles.name}>{player.name}</span>
 
-            <img src={player.avatar} alt={player.name} className={styles.avatar} />
+            <img
+              // ДОБАВИЛИ ID: player-avatar-0, player-avatar-1 и т.д.
+              id={`player-avatar-${index}`}
+              src={player.avatar}
+              alt={player.name}
+              className={styles.avatar}
+            />
 
             <div className={styles.scoreWrapper}>
               <span className={styles.score}>{player.score}</span>

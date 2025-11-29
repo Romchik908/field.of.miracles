@@ -1,0 +1,133 @@
+:local {
+  .container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 50;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .avatarWrapper {
+    position: absolute;
+    /* 
+     Эти значения будут перезаписаны анимацией сразу же, 
+     но для надежности можно оставить дефолт 
+  */
+    top: 0;
+    left: 0;
+
+    width: 100px;
+    height: 100px;
+
+    animation: walkToDrum 0.8s ease-out forwards;
+  }
+
+  .avatar {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 4px solid #fff;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+    background: #fff;
+    object-fit: cover;
+    animation: bobbing 0.3s infinite alternate;
+  }
+
+  /* Рука без изменений */
+  .hand {
+    position: absolute;
+    left: 85px;
+    top: 10px;
+    font-size: 80px;
+    opacity: 0;
+    transform-origin: 20% 80%;
+    animation: slap 0.3s cubic-bezier(0.5, 0, 1, 1) 0.75s forwards;
+  }
+
+  /* --- АНИМАЦИИ --- */
+
+  @keyframes walkToDrum {
+    0% {
+      /* СТАРТ: Берем координаты из CSS-переменных (позиция на табло) */
+      top: var(--start-top);
+      left: var(--start-left);
+      width: var(--start-width);
+      height: var(--start-width); /* Квадрат */
+
+      transform: translate(0, 0) scale(1);
+      opacity: 1;
+    }
+    100% {
+      /* ФИНИШ: Фиксированная позиция у барабана (тот самый "красный квадрат") */
+      top: 220px;
+      left: 10%;
+
+      width: 100px; /* Размер у барабана */
+      height: 100px;
+
+      /* Сдвиг к центру */
+      transform: translate(0, 0) translateX(0) scale(1);
+
+      /* 
+       ВАЖНО: В прошлой версии мы использовали translateX(-380px) от 50%.
+       Здесь мы идем от left: 10%. 
+       Если оставить старую логику позиционирования, код будет таким:
+    */
+      left: 50%;
+      transform: translateX(-380px) scale(1.2);
+    }
+  }
+
+  @media (max-width: 900px) {
+    /* Адаптив для финишной точки */
+    @keyframes walkToDrum {
+      0% {
+        top: var(--start-top);
+        left: var(--start-left);
+        width: var(--start-width);
+        height: var(--start-width);
+        transform: translate(0, 0);
+      }
+      100% {
+        top: 150px;
+        left: 50%;
+        transform: translateX(-200px) scale(1);
+      }
+    }
+  }
+
+  /* bobbing и slap без изменений */
+  @keyframes bobbing {
+    0% {
+      transform: translateY(0) rotate(-5deg);
+    }
+    100% {
+      transform: translateY(-8px) rotate(5deg);
+    }
+  }
+
+  @keyframes slap {
+    0% {
+      opacity: 0;
+      transform: rotate(40deg) translate(-10px, 30px) scale(0.8);
+    }
+    1% {
+      opacity: 1;
+    }
+    30% {
+      opacity: 1;
+      transform: rotate(50deg) translate(-15px, 40px) scale(0.9);
+    }
+    99% {
+      opacity: 1;
+      transform: rotate(-30deg) translate(40px, -50px) scale(1.1);
+    }
+    100% {
+      opacity: 0;
+      transform: rotate(-30deg) translate(40px, -50px) scale(1.1);
+    }
+  }
+}

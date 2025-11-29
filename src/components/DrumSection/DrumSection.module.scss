@@ -1,0 +1,150 @@
+:local {
+  /* --- СЛОЙ БАРАБАНА --- */
+  .drumLayer {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    z-index: 5;
+    flex-shrink: 0;
+
+    &.clickable {
+      cursor: pointer;
+      &:hover .drumCropWindow {
+        /* Усиление тени при наведении */
+        filter: drop-shadow(0 0 40px rgba(252, 163, 17, 0.8))
+          drop-shadow(0 30px 60px rgba(0, 0, 0, 0.9));
+      }
+    }
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 50px;
+      background: linear-gradient(to bottom, rgba(0, 0, 0, 0.7), transparent);
+      pointer-events: none;
+      z-index: 6;
+    }
+
+    @media (max-width: 900px) {
+      order: 1;
+    }
+  }
+
+  /* Окно обрезки: ширина барабана 800px */
+  .drumCropWindow {
+    width: 800px;
+    height: 400px;
+    overflow: hidden;
+    position: relative;
+    filter: drop-shadow(0 0 20px rgba(252, 163, 17, 0.5))
+      drop-shadow(0 20px 40px rgba(0, 0, 0, 0.8));
+    transition: filter 0.3s ease;
+    will-change: filter;
+  }
+
+  .drumWrapper {
+    width: 800px;
+    height: 800px;
+    position: relative;
+    border-radius: 50%;
+    background: #0d1b2a;
+    margin-top: -400px;
+    transition: all 0.3s ease;
+    box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.9);
+  }
+
+  .wheelContainer {
+    width: 100%;
+    height: 100%;
+    transition: transform 5s cubic-bezier(0.1, 0.05, 0.1, 1);
+    will-change: transform;
+  }
+
+  .arrow {
+    position: absolute;
+    top: 370px;
+    left: 50%;
+    transform: translateX(-50%) rotate(180deg);
+    z-index: 20;
+    font-size: 60px;
+    color: #fff;
+    filter: drop-shadow(0 -5px 10px rgba(0, 0, 0, 0.8));
+    transition: all 0.3s ease;
+  }
+
+  .spinHint {
+    margin-top: 15px;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0% {
+      opacity: 0.4;
+    }
+    50% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0.4;
+    }
+  }
+
+  /* --- АДАПТИВНОСТЬ ПО ВЫСОТЕ --- */
+  @media (max-height: 900px) {
+    .drumCropWindow {
+      width: 600px;
+      height: 300px;
+    }
+    .drumWrapper {
+      width: 600px;
+      height: 600px;
+      margin-top: -300px;
+    }
+    .arrow {
+      top: 275px;
+      font-size: 50px;
+    }
+  }
+
+  @media (max-height: 750px) {
+    .drumCropWindow {
+      width: 450px;
+      height: 225px;
+    }
+    .drumWrapper {
+      width: 450px;
+      height: 450px;
+      margin-top: -225px;
+    }
+    .arrow {
+      top: 205px;
+      font-size: 40px;
+    }
+  }
+
+  /* --- АДАПТИВНОСТЬ ПО ШИРИНЕ --- */
+  @media (max-width: 600px) {
+    .drumCropWindow {
+      width: 300px;
+      height: 150px;
+    }
+    .drumWrapper {
+      width: 300px;
+      height: 300px;
+      margin-top: -150px;
+    }
+    .arrow {
+      font-size: 35px;
+      top: 130px;
+    }
+  }
+}

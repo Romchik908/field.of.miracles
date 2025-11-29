@@ -3,6 +3,7 @@ import { initialPlayers, gameQuestions } from '../constants/gameData';
 import type { GameSaveData, Player, GameState } from '../types';
 
 export const useGame = (initialData: GameSaveData | null) => {
+  // --- ИНИЦИАЛИЗАЦИЯ СОСТОЯНИЙ ---
   const [roundIndex, setRoundIndex] = useState(initialData?.roundIndex ?? 0);
   const [allPlayers, setAllPlayers] = useState<Player[]>(initialData?.allPlayers ?? initialPlayers);
   const [finalists, setFinalists] = useState<Player[]>(initialData?.finalists ?? []);
@@ -17,19 +18,18 @@ export const useGame = (initialData: GameSaveData | null) => {
     initialData?.consecutiveGuesses ?? 0,
   );
 
-  const [gameState, setGameState] = useState<GameState>(initialData ? 'SPIN' : 'SPIN');
-  const [message, setMessage] = useState(
-    initialData ? 'Игра восстановлена! Вращайте барабан.' : 'Вращайте барабан!',
-  );
+  const [gameState, setGameState] = useState<GameState>(initialData?.gameState ?? 'SPIN');
   const [currentSectorValue, setCurrentSectorValue] = useState<string | number | null>(
     initialData?.currentSectorValue ?? null,
   );
 
-  // --- ИСПРАВЛЕНИЕ БАГА ЗАГРУЗКИ ---
-  // Следим за initialData. Если он пришел (например, после нажатия "Продолжить"),
-  // мы принудительно обновляем все стейты.
+  // Изначальное сообщение (будет перезаписано в useEffect, если есть сохранение)
+  const [message, setMessage] = useState('Вращайте барабан!');
+
+  // --- ЭФФЕКТ СИНХРОНИЗАЦИИ (ЗАГРУЗКА / СБРОС) ---
   useEffect(() => {
     if (initialData) {
+      // Восстанавливаем стейт
       setRoundIndex(initialData.roundIndex);
       setAllPlayers(initialData.allPlayers);
       setFinalists(initialData.finalists);
@@ -39,10 +39,21 @@ export const useGame = (initialData: GameSaveData | null) => {
       setConsecutiveGuesses(initialData.consecutiveGuesses);
       setGameState(initialData.gameState);
       setCurrentSectorValue(initialData.currentSectorValue);
-      setMessage('Игра восстановлена! Вращайте барабан.');
+
+      // Восстанавливаем правильное сообщение в зависимости от фазы игры
+      if (initialData.gameState === 'GUESS') {
+        setMessage('Игра восстановлена! Называйте букву.');
+      } else if (initialData.gameState === 'PRIZE_DECISION') {
+        setMessage('Игра восстановлена! Сектор ПРИЗ.');
+      } else if (initialData.gameState === 'PLUS_SELECTION') {
+        setMessage('Игра восстановлена! Сектор ПЛЮС. Выберите букву.');
+      } else if (initialData.gameState === 'PHONE_CALL') {
+        setMessage('Игра восстановлена! Звонок другу.');
+      } else {
+        setMessage('Игра восстановлена! Вращайте барабан.');
+      }
     } else {
-      // Если initialData стал null (нажали "Новая игра"), сбрасываем в дефолт
-      // Это важно, если мы начали новую игру без перезагрузки страницы
+      // Сброс (Новая игра)
       setRoundIndex(0);
       setAllPlayers(initialPlayers);
       setFinalists([]);
@@ -56,6 +67,7 @@ export const useGame = (initialData: GameSaveData | null) => {
     }
   }, [initialData]);
 
+  // --- ВЫЧИСЛЯЕМЫЕ ЗНАЧЕНИЯ ---
   const currentQuestion = gameQuestions[roundIndex] || gameQuestions[0];
 
   const currentPlayers = useMemo(() => {
@@ -69,18 +81,19 @@ export const useGame = (initialData: GameSaveData | null) => {
 
   const activePlayer = currentPlayers[activePlayerLocalIndex] || currentPlayers[0];
 
-  // --- ЛОГИКА ---
+  // --- ИГРОВАЯ ЛОГИКА ---
 
   const switchPlayer = (currentEliminated = eliminatedLocalIndices) => {
     setConsecutiveGuesses(0);
 
     let nextIndex = (activePlayerLocalIndex + 1) % currentPlayers.length;
     let attempts = 0;
+    // Пропускаем выбывших
     while (currentEliminated.includes(nextIndex) && attempts < currentPlayers.length) {
       nextIndex = (nextIndex + 1) % currentPlayers.length;
       attempts++;
     }
-    if (attempts === currentPlayers.length) return;
+    if (attempts === currentPlayers.length) return; // Все выбыли (теоретически невозможно)
 
     setActivePlayerLocalIndex(nextIndex);
     setGameState('SPIN');
@@ -119,6 +132,7 @@ export const useGame = (initialData: GameSaveData | null) => {
         return p;
       }),
     );
+    // Если это финал, обновляем и локальный список финалистов для отображения
     if (roundIndex === 3) {
       setFinalists((prev) =>
         prev.map((p) => {
@@ -159,15 +173,17 @@ export const useGame = (initialData: GameSaveData | null) => {
       return;
     }
     if (sector === 'Ш') {
-      setMessage('Сектор ШАНС!');
+      setMessage('Сектор ШАНС! (Звонок)');
       setGameState('PHONE_CALL');
       return;
     }
+
     if (sector === 'x2') {
       setMessage('Сектор x2!');
     } else {
       setMessage(`Сектор ${sector} очков!`);
     }
+
     setGameState('GUESS');
   };
 
@@ -193,6 +209,7 @@ export const useGame = (initialData: GameSaveData | null) => {
       const isWin = currentQuestion.word.split('').every((char) => newGuessed.includes(char));
       if (isWin) return 'WIN';
 
+      // Логика шкатулок (3 подряд)
       const newStreak = consecutiveGuesses + 1;
       if (newStreak === 3) {
         setConsecutiveGuesses(0);
@@ -262,6 +279,7 @@ export const useGame = (initialData: GameSaveData | null) => {
     switchPlayer,
     checkWin,
     nextLevel,
+    // Экспорт сырого состояния для сохранения
     rawState: {
       roundIndex,
       allPlayers,

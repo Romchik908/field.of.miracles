@@ -4,6 +4,16 @@ import { useDrum } from './useDrum';
 import { KEY_MAP } from '../constants/gameData';
 import type { GameSaveData } from '../types';
 
+// Секретные хоткеи (ALT + ...)
+const CHEAT_KEYS: Record<string, string | number> = {
+  Digit1: 1000,
+  Digit2: 'x2',
+  KeyP: 'П',
+  KeyB: 'БАНКРОТ',
+  KeyS: 'Ш',
+  Equal: '+',
+};
+
 export const useGameController = (initialData: GameSaveData | null) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState<'WIN' | 'PRIZE' | 'PHONE' | 'CASKET'>('WIN');
@@ -13,7 +23,6 @@ export const useGameController = (initialData: GameSaveData | null) => {
 
   const [isCheatAnimationEnabled, setIsCheatAnimationEnabled] = useState(true);
 
-  // ПЕРЕДАЕМ ДАННЫЕ В ХУК ИГРЫ
   const game = useGame(initialData);
 
   const handleDrumStop = (sector: string | number) => game.handleSector(sector);
@@ -27,15 +36,19 @@ export const useGameController = (initialData: GameSaveData | null) => {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.altKey) return; // Стелс-читы обрабатываются в самом компоненте или тут, если добавить
-      if (isModalOpen) return;
-
-      if (e.code === 'Space') {
+      // 0. СТЕЛС-ЧИТЫ (ALT + КЛАВИША)
+      if (e.altKey && CHEAT_KEYS[e.code]) {
         e.preventDefault();
-        if (game.gameState === 'SPIN' && !drum.isSpinning) drum.spin();
+        if (!drum.isSpinning) drum.spinTo(CHEAT_KEYS[e.code]);
         return;
       }
 
+      if (isModalOpen) return;
+
+      // ВАЖНО: ЛОГИКА ПРОБЕЛА УДАЛЕНА ОТСЮДА
+      // Она перенесена в GameLayout.tsx, чтобы запускать анимацию человечка
+
+      // 2. ВВОД БУКВЫ
       if (game.gameState !== 'GUESS') return;
 
       let letter = '';
@@ -55,7 +68,6 @@ export const useGameController = (initialData: GameSaveData | null) => {
       setModalType('WIN');
       setIsModalOpen(true);
     }
-    // CASKETS откроются через useEffect
   };
 
   const onLetterClick = (index: number) => {
@@ -124,9 +136,7 @@ export const useGameController = (initialData: GameSaveData | null) => {
   }, [game.gameState]);
 
   return {
-    // Экспортируем rawState для сохранения
     rawState: game.rawState,
-
     gameData: { ...game, question: game.currentQuestion.question, word: game.currentQuestion.word },
     drumData: { rotation: drum.rotation, isSpinning: drum.isSpinning },
     debug: {

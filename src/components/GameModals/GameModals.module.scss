@@ -1,0 +1,52 @@
+:local {
+  .modalContent {
+    color: #333; /* Делаем текст темным, так как модалки белые */
+  }
+
+  .casketText {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .winText {
+    color: green;
+  }
+
+  .loseText {
+    color: gray;
+  }
+
+  .prizeIcon {
+    font-size: 50px;
+    text-align: center;
+    margin: 20px 0;
+  }
+
+  .phoneContainer {
+    text-align: center;
+  }
+
+  .phoneHint {
+    margin-top: 20px;
+  }
+
+  .hintText {
+    font-size: 24px;
+    font-weight: bold;
+    color: #fca311;
+  }
+
+  .footerButtons {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .casketContainer {
+    display: flex;
+    gap: 40px;
+    justify-content: center;
+    padding: 20px;
+  }
+}
