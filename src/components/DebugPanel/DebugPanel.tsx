@@ -1,5 +1,5 @@
-import React from 'react';
 import { Button, Checkbox } from '@skbkontur/react-ui';
+import React from 'react';
 import { useGameContext } from '../../context/GameContext';
 import styles from './DebugPanel.module.scss';
 

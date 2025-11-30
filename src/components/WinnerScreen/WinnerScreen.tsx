@@ -10,6 +10,7 @@ interface Props {
   score: number;
   word: string;
   onNext: () => void;
+  isSuperGame?: boolean;
 }
 
 export const WinnerScreen: React.FC<Props> = ({
@@ -18,6 +19,7 @@ export const WinnerScreen: React.FC<Props> = ({
   score,
   word,
   onNext,
+  isSuperGame,
 }) => {
   const { width, height } = useSize();
 
@@ -26,12 +28,18 @@ export const WinnerScreen: React.FC<Props> = ({
       <Confetti
         width={width}
         height={height}
-        numberOfPieces={300}
+        numberOfPieces={isSuperGame ? 600 : 300}
         gravity={0.15}
-        colors={['#fca311', '#ffffff', '#e63946', '#457b9d']}
+        colors={
+          isSuperGame
+            ? ['#FFD700', '#FFA500', '#FFFFFF', '#C0C0C0']
+            : ['#fca311', '#ffffff', '#e63946', '#457b9d']
+        }
       />
-      <div className={styles.card}>
-        <div className={styles.title}>Победитель раунда</div>
+      <div className={`${styles.card} ${isSuperGame ? styles.superWin : ''}`}>
+        <div className={styles.title}>
+          {isSuperGame ? '🏆 ПОБЕДИТЕЛЬ СУПЕРИГРЫ 🏆' : 'Победитель раунда'}
+        </div>
         <div className={styles.avatarWrapper}>
           <div className={styles.glow} />
           <img src={winnerAvatar} alt={winnerName} className={styles.avatar} />
@@ -42,7 +50,7 @@ export const WinnerScreen: React.FC<Props> = ({
           Угадал слово: <b>{word}</b>
         </div>
         <Button onClick={onNext} use="primary" size="large">
-          ПРОДОЛЖИТЬ
+          {isSuperGame ? 'ВЫБРАТЬ ПРИЗЫ ->' : 'ПРОДОЛЖИТЬ'}
         </Button>
       </div>
     </div>

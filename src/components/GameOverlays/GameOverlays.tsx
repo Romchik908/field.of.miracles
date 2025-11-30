@@ -1,8 +1,11 @@
+import { Button, Input, Modal, Spinner } from '@skbkontur/react-ui';
 import React, { useState } from 'react';
-import { Button, Modal, Spinner, Input } from '@skbkontur/react-ui';
 import { useGameContext } from '../../context/GameContext';
-import { WinnerScreen } from '../WinnerScreen/WinnerScreen';
 import { FullScreenEvent } from '../FullScreenEvent/FullScreenEvent';
+import { PrizeShop } from '../PrizeShop/PrizeShop';
+import { PrizeSummary } from '../PrizeSummary/PrizeSummary';
+import { WinnerScreen } from '../WinnerScreen/WinnerScreen';
+import styles from './GameOverlays.module.scss';
 
 export const GameOverlays: React.FC = () => {
   const { controller } = useGameContext();
@@ -10,8 +13,21 @@ export const GameOverlays: React.FC = () => {
 
   const [wordInputValue, setWordInputValue] = useState('');
 
-  // 1. ПОБЕДА (Самый высокий приоритет)
+  if (gameData.gameState === 'PRIZE_SUMMARY') {
+    return <PrizeSummary wonPrizesIds={gameData.wonPrizesIds} />;
+  }
+
+  if (gameData.gameState === 'PRIZE_SHOP') {
+    return (
+      <PrizeShop
+        playerScore={gameData.players[gameData.activePlayerIndex]?.score || 0}
+        onFinish={actions.finishPrizeShop}
+      />
+    );
+  }
+
   if (modal.isOpen && modal.type === 'WIN') {
+    const isSuperGame = gameData.roundIndex === 3;
     return (
       <WinnerScreen
         winnerName={modal.winnerName}
@@ -19,11 +35,11 @@ export const GameOverlays: React.FC = () => {
         score={gameData.players.find((p) => p.name === modal.winnerName)?.score || 0}
         word={modal.word}
         onNext={actions.nextRound}
+        isSuperGame={isSuperGame}
       />
     );
   }
 
-  // 2. ПОЛНОЭКРАННЫЕ СОБЫТИЯ (Приз, Шкатулки)
   if (modal.isOpen && modal.type === 'PRIZE') {
     return (
       <FullScreenEvent
@@ -49,7 +65,7 @@ export const GameOverlays: React.FC = () => {
       <FullScreenEvent
         title="ДВЕ ШКАТУЛКИ"
         icon="🧳"
-        description="В студию вносятся две шкатулки! В одной — деньги, другая пустая. Выберите одну из них (в реальности). Угадали?"
+        description="В студию вносятся две шкатулки! Выберите одну из них (в реальности). Если угадали — продолжаем с деньгами."
         actions={
           <Button onClick={actions.casketFinish} use="primary" size="large">
             ПРОДОЛЖИТЬ ИГРУ
@@ -59,21 +75,18 @@ export const GameOverlays: React.FC = () => {
     );
   }
 
-  // 3. ОБЫЧНЫЕ МОДАЛКИ (Телефон)
   if (modal.isOpen && modal.type === 'PHONE') {
     return (
       <Modal onClose={() => {}} width={500}>
-        <div style={{ color: '#333' }}>
+        <div className={styles.modalContent}>
           <Modal.Header>Звонок другу</Modal.Header>
           <Modal.Body>
-            <div style={{ textAlign: 'center' }}>
+            <div className={styles.phoneContainer}>
               <p>Гудки...</p>
               <Spinner type="normal" caption="Звоним..." />
-              <div style={{ marginTop: 20 }}>
+              <div className={styles.phoneHint}>
                 <p>Друг кричит в трубку:</p>
-                <p style={{ fontSize: '24px', fontWeight: 'bold', color: '#fca311' }}>
-                  "Я думаю это буква {modal.phoneHint}!"
-                </p>
+                <p className={styles.phoneHintText}>"Я думаю это буква {modal.phoneHint}!"</p>
               </div>
             </div>
           </Modal.Body>
@@ -87,11 +100,10 @@ export const GameOverlays: React.FC = () => {
     );
   }
 
-  // 4. МОДАЛКА ВВОДА СЛОВА
   if (wordModal.isOpen) {
     return (
       <Modal onClose={wordModal.close} width={400}>
-        <div style={{ color: '#333' }}>
+        <div className={styles.modalContent}>
           <Modal.Header>Назвать слово целиком</Modal.Header>
           <Modal.Body>
             <p>

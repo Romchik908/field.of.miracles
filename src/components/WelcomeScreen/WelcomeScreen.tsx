@@ -1,7 +1,7 @@
-import React from 'react';
 import { Button } from '@skbkontur/react-ui';
-import { hasSavedGame } from '../../utils/storage';
+import React from 'react';
 import { useGameContext } from '../../context/GameContext';
+import { hasSavedGame } from '../../utils/storage';
 import styles from './WelcomeScreen.module.scss';
 
 export const WelcomeScreen: React.FC = () => {

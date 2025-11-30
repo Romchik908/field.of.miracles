@@ -1,9 +1,7 @@
 import React from 'react';
 import { useGameContext } from '../../context/GameContext';
 import { useSpinAnimationLogic } from '../../hooks/useSpinAnimationLogic';
-
-// Компоненты-блоки
-import { CenterSection } from '../CenterSection/CenterSection'; // <-- Используем!
+import { CenterSection } from '../CenterSection/CenterSection';
 import { DebugPanel } from '../DebugPanel/DebugPanel';
 import { DrumSection } from '../DrumSection/DrumSection';
 import { GameOverlays } from '../GameOverlays/GameOverlays';
@@ -29,7 +27,6 @@ export const GameLayout: React.FC = () => {
 
   return (
     <div className={styles.appContainer}>
-      {/* 1. Анимация персонажа (поверх всего в момент вращения) */}
       {isAnimating && (
         <SpinAnimation
           avatarUrl={avatarUrl}
@@ -38,8 +35,6 @@ export const GameLayout: React.FC = () => {
           onAnimationEnd={() => setIsAnimating(false)}
         />
       )}
-
-      {/* 2. Экран победы (самый верхний слой перекрытия) */}
       {modal.isOpen && modal.type === 'WIN' && (
         <WinnerScreen
           winnerName={modal.winnerName}
@@ -49,13 +44,7 @@ export const GameLayout: React.FC = () => {
           onNext={actions.nextRound}
         />
       )}
-
-      {/* 3. Оверлеи и модалки (Приз, Шкатулки, Ввод слова и т.д.) */}
       <GameOverlays />
-
-      {/* 4. ОСНОВНОЙ ИНТЕРФЕЙС */}
-
-      {/* Слева: Список игроков */}
       <div className={styles.scoreboardLayer}>
         <Scoreboard
           players={gameData.players}
@@ -63,14 +52,8 @@ export const GameLayout: React.FC = () => {
           eliminatedIndices={gameData.eliminatedPlayers}
         />
       </div>
-
-      {/* Сверху: Барабан */}
       <DrumSection canSpin={canSpin} onSpinClick={handleStartSpinning} />
-
-      {/* Центр: Доска, Вопрос, Управление */}
       <CenterSection />
-
-      {/* Утилиты */}
       <DebugPanel />
     </div>
   );

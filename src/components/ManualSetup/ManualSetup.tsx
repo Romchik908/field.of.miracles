@@ -30,6 +30,7 @@ export const ManualSetup: React.FC = () => {
       gameState: 'SPIN',
       currentSectorValue: null,
       consecutiveGuesses: 0,
+      wonPrizesIds: [],
     };
 
     startManualGame(data);

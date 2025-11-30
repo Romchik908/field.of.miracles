@@ -26,7 +26,7 @@ export const CenterSection: React.FC = () => {
           gameState={gameData.gameState}
           message={gameData.message}
           onGuess={actions.guessLetter}
-          onWordGuessClick={wordModal.open} // <-- Подключили кнопку ввода слова
+          onWordGuessClick={wordModal.open}
         />
       </div>
     </div>

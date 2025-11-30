@@ -4,7 +4,9 @@ export type GameState =
   | 'PRIZE_DECISION'
   | 'PLUS_SELECTION'
   | 'PHONE_CALL'
-  | 'CASKET_SELECTION';
+  | 'CASKET_SELECTION'
+  | 'PRIZE_SHOP'
+  | 'PRIZE_SUMMARY';
 
 export interface Player {
   id: number;
@@ -28,4 +30,5 @@ export interface GameSaveData {
   gameState: GameState;
   currentSectorValue: string | number | null;
   consecutiveGuesses: number;
+  wonPrizesIds: number[];
 }

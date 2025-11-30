@@ -30,15 +30,12 @@ export const useSpinAnimationLogic = () => {
     setIsAnimating(true);
   };
 
-  // --- АВТО-СТАРТ ПРИ ЧИТАХ ---
-  // Если появился pendingTarget (заказан чит), и мы можем крутить — запускаем анимацию человечка.
   useEffect(() => {
     if (debug.pendingTarget !== null && canSpin) {
       handleStartSpinning();
     }
   }, [debug.pendingTarget, canSpin]);
 
-  // --- ОБРАБОТКА ПРОБЕЛА ---
   useEffect(() => {
     const handleSpace = (e: KeyboardEvent) => {
       if (e.code === 'Space' && !modal.isOpen) {
@@ -56,7 +53,7 @@ export const useSpinAnimationLogic = () => {
     animStartPos,
     handleStartSpinning,
     canSpin,
-    onRealSpin: actions.spinDrum, // Это вызовет executeSpin в контроллере
+    onRealSpin: actions.spinDrum,
     avatarUrl: gameData.players[gameData.activePlayerIndex]?.avatar,
   };
 };

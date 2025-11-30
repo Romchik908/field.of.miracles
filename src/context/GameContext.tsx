@@ -32,6 +32,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         gameState: controller.gameData.gameState,
         currentSectorValue: controller.gameData.currentSectorValue,
         consecutiveGuesses: controller.rawState.consecutiveGuesses,
+        wonPrizesIds: controller.rawState.wonPrizesIds,
       };
       saveGame(dataToSave);
     }

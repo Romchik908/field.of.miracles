@@ -1,7 +1,6 @@
 import { Button, Modal, Spinner } from '@skbkontur/react-ui';
 import React from 'react';
 import { useGameContext } from '../../context/GameContext';
-import { Casket } from '../Casket/Casket';
 import styles from './GameModals.module.scss';
 
 export const GameModals: React.FC = () => {
@@ -10,34 +9,10 @@ export const GameModals: React.FC = () => {
 
   if (!modal.isOpen) return null;
 
-  if (modal.type === 'WIN') return null;
+  if (['WIN', 'PRIZE', 'CASKET'].includes(modal.type)) return null;
 
   const renderContent = () => {
     switch (modal.type) {
-      case 'PRIZE':
-        return (
-          <div className={styles.modalContent}>
-            <Modal.Header>Сектор ПРИЗ!</Modal.Header>
-            <Modal.Body>
-              <p>
-                Вы можете забрать приз и закончить игру (для текущего игрока), либо отказаться и
-                продолжить угадывать буквы.
-              </p>
-              <div className={styles.prizeIcon}>🎁</div>
-            </Modal.Body>
-            <Modal.Footer panel>
-              <div className={styles.footerButtons}>
-                <Button onClick={() => actions.prizeChoice(true)} use="primary" size="medium">
-                  Забрать ПРИЗ
-                </Button>
-                <Button onClick={() => actions.prizeChoice(false)} size="medium">
-                  Играть дальше
-                </Button>
-              </div>
-            </Modal.Footer>
-          </div>
-        );
-
       case 'PHONE':
         return (
           <div className={styles.modalContent}>
@@ -57,28 +32,6 @@ export const GameModals: React.FC = () => {
                 Спасибо, друг
               </Button>
             </Modal.Footer>
-          </div>
-        );
-
-      case 'CASKET':
-        return (
-          <div className={styles.modalContent}>
-            <Modal.Header>ДВЕ ШКАТУЛКИ!</Modal.Header>
-            <Modal.Body>
-              <div className={styles.casketText}>
-                {modal.casketResult === 'win' && (
-                  <h3 className={styles.winText}>Поздравляем! Там деньги!</h3>
-                )}
-                {modal.casketResult === 'empty' && (
-                  <h3 className={styles.loseText}>Увы, пусто...</h3>
-                )}
-                {!modal.casketResult && <p>Вы угадали 3 буквы подряд! Выберите шкатулку:</p>}
-              </div>
-              <div className={styles.casketContainer}>
-                <Casket onClick={actions.casketChoice} result={modal.casketResult} />
-                <Casket onClick={actions.casketChoice} result={modal.casketResult} />
-              </div>
-            </Modal.Body>
           </div>
         );
 

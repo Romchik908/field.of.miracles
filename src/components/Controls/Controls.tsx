@@ -6,7 +6,7 @@ interface Props {
   gameState: string;
   message: string;
   onGuess: (letter: string) => void;
-  onWordGuessClick: () => void; // <-- Новый проп
+  onWordGuessClick: () => void;
 }
 
 export const Controls: React.FC<Props> = ({ gameState, message, onWordGuessClick }) => {

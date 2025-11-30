@@ -1,6 +1,6 @@
 import React from 'react';
-import { Wheel } from '../Wheel/Wheel';
 import { useGameContext } from '../../context/GameContext';
+import { Wheel } from '../Wheel/Wheel';
 import styles from './DrumSection.module.scss';
 
 interface DrumSectionProps {
