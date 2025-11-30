@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
-import { gameQuestions, initialPlayers } from '../constants/gameData';
-import type { GameSaveData, GameState, Player } from '../types';
+import { useState, useMemo, useEffect } from 'react';
+import { initialPlayers, gameQuestions } from '../constants/gameData';
+import type { GameSaveData, Player, GameState } from '../types';
 
 export const useGame = (initialData: GameSaveData | null) => {
   const [roundIndex, setRoundIndex] = useState(initialData?.roundIndex ?? 0);
@@ -18,11 +18,10 @@ export const useGame = (initialData: GameSaveData | null) => {
   );
 
   const [gameState, setGameState] = useState<GameState>(initialData?.gameState ?? 'SPIN');
+  const [message, setMessage] = useState(initialData ? 'Игра восстановлена!' : 'Вращайте барабан!');
   const [currentSectorValue, setCurrentSectorValue] = useState<string | number | null>(
     initialData?.currentSectorValue ?? null,
   );
-
-  const [message, setMessage] = useState('Вращайте барабан!');
 
   useEffect(() => {
     if (initialData) {
@@ -36,17 +35,11 @@ export const useGame = (initialData: GameSaveData | null) => {
       setGameState(initialData.gameState);
       setCurrentSectorValue(initialData.currentSectorValue);
 
-      if (initialData.gameState === 'GUESS') {
-        setMessage('Игра восстановлена! Называйте букву.');
-      } else if (initialData.gameState === 'PRIZE_DECISION') {
-        setMessage('Игра восстановлена! Сектор ПРИЗ.');
-      } else if (initialData.gameState === 'PLUS_SELECTION') {
-        setMessage('Игра восстановлена! Сектор ПЛЮС. Выберите букву.');
-      } else if (initialData.gameState === 'PHONE_CALL') {
-        setMessage('Игра восстановлена! Звонок другу.');
-      } else {
+      // Восстановление сообщения
+      if (initialData.gameState === 'GUESS') setMessage('Игра восстановлена! Называйте букву.');
+      else if (initialData.gameState === 'SPIN')
         setMessage('Игра восстановлена! Вращайте барабан.');
-      }
+      else setMessage('Игра восстановлена!');
     } else {
       setRoundIndex(0);
       setAllPlayers(initialPlayers);
@@ -74,9 +67,10 @@ export const useGame = (initialData: GameSaveData | null) => {
 
   const activePlayer = currentPlayers[activePlayerLocalIndex] || currentPlayers[0];
 
+  // --- ЛОГИКА ---
+
   const switchPlayer = (currentEliminated = eliminatedLocalIndices) => {
     setConsecutiveGuesses(0);
-
     let nextIndex = (activePlayerLocalIndex + 1) % currentPlayers.length;
     let attempts = 0;
     while (currentEliminated.includes(nextIndex) && attempts < currentPlayers.length) {
@@ -122,7 +116,6 @@ export const useGame = (initialData: GameSaveData | null) => {
         return p;
       }),
     );
-
     if (roundIndex === 3) {
       setFinalists((prev) =>
         prev.map((p) => {
@@ -143,7 +136,6 @@ export const useGame = (initialData: GameSaveData | null) => {
 
   const handleSector = (sector: string | number) => {
     setCurrentSectorValue(sector);
-
     if (sector === 'БАНКРОТ') {
       resetScore();
       setConsecutiveGuesses(0);
@@ -151,7 +143,6 @@ export const useGame = (initialData: GameSaveData | null) => {
       setTimeout(() => switchPlayer(), 2000);
       return;
     }
-
     if (sector === 'П') {
       setMessage('Сектор ПРИЗ!');
       setGameState('PRIZE_DECISION');
@@ -163,17 +154,15 @@ export const useGame = (initialData: GameSaveData | null) => {
       return;
     }
     if (sector === 'Ш') {
-      setMessage('Сектор ШАНС! (Звонок)');
+      setMessage('Сектор ШАНС!');
       setGameState('PHONE_CALL');
       return;
     }
-
     if (sector === 'x2') {
       setMessage('Сектор x2!');
     } else {
       setMessage(`Сектор ${sector} очков!`);
     }
-
     setGameState('GUESS');
   };
 
@@ -192,7 +181,6 @@ export const useGame = (initialData: GameSaveData | null) => {
       const count = currentQuestion.word
         .split('')
         .filter((char) => char === normalizedLetter).length;
-
       if (typeof currentSectorValue === 'number') addScore(currentSectorValue * count);
       else if (currentSectorValue === 'x2') addScore(0, true);
 
@@ -215,6 +203,26 @@ export const useGame = (initialData: GameSaveData | null) => {
       setMessage('Такой буквы нет! Переход хода.');
       setConsecutiveGuesses(0);
       setTimeout(() => switchPlayer(), 1500);
+      return 'WRONG';
+    }
+  };
+
+  // --- НОВАЯ ФУНКЦИЯ: Угадывание слова целиком ---
+  const handleWordGuess = (wordInput: string): 'WIN' | 'WRONG' => {
+    const normalizedInput = wordInput.toUpperCase().trim();
+
+    if (normalizedInput === currentQuestion.word) {
+      // Угадал! Открываем все буквы
+      setGuessedLetters(currentQuestion.word.split(''));
+      return 'WIN';
+    } else {
+      // Не угадал! Выбывает.
+      setMessage(`Неправильно! Игрок ${activePlayer.name} выбывает из раунда.`);
+
+      const newEliminated = [...eliminatedLocalIndices, activePlayerLocalIndex];
+      setEliminatedLocalIndices(newEliminated);
+
+      setTimeout(() => switchPlayer(newEliminated), 2000);
       return 'WRONG';
     }
   };
@@ -261,6 +269,7 @@ export const useGame = (initialData: GameSaveData | null) => {
     setGameState,
     setMessage,
     handleGuess,
+    handleWordGuess, // <-- Экспортируем
     handleSector,
     handlePlusAction,
     handlePrizeDecision,

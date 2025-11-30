@@ -6,7 +6,7 @@ import styles from './CenterSection.module.scss';
 
 export const CenterSection: React.FC = () => {
   const { controller } = useGameContext();
-  const { gameData, actions } = controller;
+  const { gameData, actions, wordModal } = controller;
 
   return (
     <div className={styles.centerLayer}>
@@ -18,12 +18,15 @@ export const CenterSection: React.FC = () => {
           isInteractive={gameData.gameState === 'PLUS_SELECTION'}
         />
       </div>
+
       <div className={styles.bottomSection}>
         <div className={styles.questionBox}>{gameData.question}</div>
+
         <Controls
           gameState={gameData.gameState}
           message={gameData.message}
           onGuess={actions.guessLetter}
+          onWordGuessClick={wordModal.open} // <-- Подключили кнопку ввода слова
         />
       </div>
     </div>

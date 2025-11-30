@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
-import { useGame } from './useGame';
-import { useDrum } from './useDrum';
+import { useCallback, useEffect, useState } from 'react';
 import { KEY_MAP } from '../constants/gameData';
 import type { GameSaveData } from '../types';
+import { useDrum } from './useDrum';
+import { useGame } from './useGame';
 
+// Секретные хоткеи (ALT + ...)
 const CHEAT_KEYS: Record<string, string | number> = {
   Digit1: 1000,
   Digit2: 'x2',
@@ -19,30 +20,64 @@ export const useGameController = (initialData: GameSaveData | null) => {
 
   const [phoneHint, setPhoneHint] = useState('');
   const [casketResult, setCasketResult] = useState<'win' | 'empty' | null>(null);
+  const [isWordGuessModalOpen, setIsWordGuessModalOpen] = useState(false);
 
   const [isCheatAnimationEnabled, setIsCheatAnimationEnabled] = useState(true);
 
-  const game = useGame(initialData);
+  // --- НОВОЕ: Цель для подкрутки барабана ---
+  const [pendingTarget, setPendingTarget] = useState<string | number | null>(null);
 
+  const game = useGame(initialData);
   const handleDrumStop = (sector: string | number) => game.handleSector(sector);
   const drum = useDrum(handleDrumStop);
 
-  const cheatSector = (sector: string | number) => {
+  // --- НОВОЕ: Умная функция вращения ---
+  // Вызывается, когда анимация человечка доходит до удара
+  const executeSpin = useCallback(() => {
+    if (pendingTarget !== null) {
+      // Если есть "заказ" от чита — крутим к нему
+      drum.spinTo(pendingTarget);
+      setPendingTarget(null); // Сбрасываем заказ после запуска
+    } else {
+      // Если заказа нет — крутим случайно (честная игра)
+      drum.spin();
+    }
+  }, [drum, pendingTarget]);
+
+  // Логика читов
+  const cheatSector = (sector: string | number, forceAnimation = false) => {
     if (drum.isSpinning) return;
-    if (isCheatAnimationEnabled) drum.spinTo(sector);
-    else game.handleSector(sector);
+
+    // Если включена анимация (галочкой или хоткеем), мы не вызываем эффект сразу,
+    // а ставим "цель". UI увидит цель и запустит анимацию человечка.
+    if (isCheatAnimationEnabled || forceAnimation) {
+      setPendingTarget(sector);
+    } else {
+      // Мгновенный эффект (без вращения)
+      game.handleSector(sector);
+    }
   };
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // 0. СТЕЛС-ЧИТЫ (ALT + КЛАВИША) -> Всегда с анимацией
       if (e.altKey && CHEAT_KEYS[e.code]) {
         e.preventDefault();
-        if (!drum.isSpinning) drum.spinTo(CHEAT_KEYS[e.code]);
+        cheatSector(CHEAT_KEYS[e.code], true);
         return;
       }
 
-      if (isModalOpen) return;
+      if (isModalOpen || isWordGuessModalOpen) return;
 
+      // 1. ПРОБЕЛ
+      // Мы предотвращаем дефолт, но саму логику запуска анимации
+      // обрабатывает GameLayout или useSpinAnimationLogic
+      if (e.code === 'Space') {
+        e.preventDefault();
+        return;
+      }
+
+      // 2. ВВОД БУКВЫ
       if (game.gameState !== 'GUESS') return;
 
       let letter = '';
@@ -54,10 +89,28 @@ export const useGameController = (initialData: GameSaveData | null) => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [game.gameState, isModalOpen, drum.isSpinning, game.guessedLetters]);
+  }, [
+    game.gameState,
+    isModalOpen,
+    isWordGuessModalOpen,
+    drum.isSpinning,
+    game.guessedLetters,
+    isCheatAnimationEnabled,
+  ]);
+
+  // --- Actions ---
 
   const onGuessLetter = (letter: string) => {
     const result = game.handleGuess(letter);
+    if (result === 'WIN') {
+      setModalType('WIN');
+      setIsModalOpen(true);
+    }
+  };
+
+  const onWordGuess = (word: string) => {
+    setIsWordGuessModalOpen(false);
+    const result = game.handleWordGuess(word);
     if (result === 'WIN') {
       setModalType('WIN');
       setIsModalOpen(true);
@@ -98,12 +151,18 @@ export const useGameController = (initialData: GameSaveData | null) => {
     }, 2000);
   };
 
+  const onCasketFinish = () => {
+    setIsModalOpen(false);
+    game.finishCaskets();
+  };
+
   const startNextRound = () => {
     game.nextLevel();
     setIsModalOpen(false);
     drum.setCurrentSector(null);
   };
 
+  // --- Effects for Modals ---
   useEffect(() => {
     if (game.gameState === 'PRIZE_DECISION') {
       setModalType('PRIZE');
@@ -133,20 +192,31 @@ export const useGameController = (initialData: GameSaveData | null) => {
     rawState: game.rawState,
     gameData: { ...game, question: game.currentQuestion.question, word: game.currentQuestion.word },
     drumData: { rotation: drum.rotation, isSpinning: drum.isSpinning },
+
     debug: {
       isCheatAnimationEnabled,
       toggleCheatAnimation: () => setIsCheatAnimationEnabled((prev) => !prev),
+      // ЭКСПОРТИРУЕМ PENDING TARGET (Это исправит ошибку TS)
+      pendingTarget,
     },
+
     actions: {
-      spinDrum: drum.spin,
+      spinDrum: executeSpin, // <-- Используем executeSpin вместо drum.spin
       guessLetter: onGuessLetter,
       clickBoardLetter: onLetterClick,
       prizeChoice: onPrizeChoice,
       endPhoneCall: onPhoneEnd,
       casketChoice: onCasketChoice,
+      casketFinish: onCasketFinish,
       closeModal: () => setIsModalOpen(false),
       nextRound: startNextRound,
       cheatSector,
+    },
+    wordModal: {
+      isOpen: isWordGuessModalOpen,
+      open: () => setIsWordGuessModalOpen(true),
+      close: () => setIsWordGuessModalOpen(false),
+      submit: onWordGuess,
     },
     modal: {
       isOpen: isModalOpen,
