@@ -1,6 +1,6 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import '/lab-grotesque-font.css?url';
+import './lab-grotesque-font.css';
 import App from './App.tsx';
 import './index.scss';
 
