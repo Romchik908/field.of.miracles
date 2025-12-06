@@ -2,14 +2,15 @@
   .scoreboard {
     display: flex;
     flex-direction: column;
-    gap: 25px;
+    gap: 25px; /* Отступ между карточками */
     padding: 10px;
   }
 
   .playerCard {
     width: 140px;
-    background: rgba(27, 38, 59, 0.9);
-    border: 2px solid #415a77;
+    /* Темно-синий фон (под цвет фона сайта) */
+    // background: #1c2532;
+    // border: 2px solid #364050;
     border-radius: 15px;
 
     display: flex;
@@ -19,22 +20,25 @@
 
     color: #e0e1dd;
     transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    // box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
     position: relative;
 
+    /* Стиль активного игрока */
     &.active {
-      background: linear-gradient(135deg, #fca311 0%, #e63946 100%);
-      color: #fff;
-      border-color: #fff;
-      transform: scale(1.1);
-      box-shadow: 0 0 25px rgba(252, 163, 17, 0.6);
+      /* Оранжевый градиент */
+      background: #ff6200 0%;
+      border: 2px solid white;
+      /* Яркое свечение */
+      box-shadow: 0 0 20px rgba(255, 140, 0, 0.6);
       z-index: 10;
+      transform: scale(1.1);
 
       .avatar {
         border-color: #fff;
       }
     }
 
+    /* Стиль выбывшего игрока */
     &.eliminated {
       filter: grayscale(100%);
       opacity: 0.5;

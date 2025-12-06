@@ -16,7 +16,6 @@ export const useGame = (initialData: GameSaveData | null) => {
   const [consecutiveGuesses, setConsecutiveGuesses] = useState(
     initialData?.consecutiveGuesses ?? 0,
   );
-
   const [wonPrizesIds, setWonPrizesIds] = useState<number[]>(initialData?.wonPrizesIds ?? []);
 
   const [gameState, setGameState] = useState<GameState>(initialData?.gameState ?? 'SPIN');
@@ -71,6 +70,8 @@ export const useGame = (initialData: GameSaveData | null) => {
   }, [roundIndex, allPlayers, finalists]);
 
   const activePlayer = currentPlayers[activePlayerLocalIndex] || currentPlayers[0];
+
+  // --- ЛОГИКА ---
 
   const switchPlayer = (currentEliminated = eliminatedLocalIndices) => {
     setConsecutiveGuesses(0);
@@ -185,7 +186,6 @@ export const useGame = (initialData: GameSaveData | null) => {
       const count = currentQuestion.word
         .split('')
         .filter((char) => char === normalizedLetter).length;
-
       if (typeof currentSectorValue === 'number') addScore(currentSectorValue * count);
       else if (currentSectorValue === 'x2') addScore(0, true);
 
@@ -212,25 +212,32 @@ export const useGame = (initialData: GameSaveData | null) => {
     }
   };
 
-  const handleWordGuess = (wordInput: string): 'WIN' | 'WRONG' => {
-    const normalizedInput = wordInput.toUpperCase().trim();
-
-    if (normalizedInput === currentQuestion.word) {
+  // --- ИЗМЕНЕНО: РУЧНОЕ УГАДЫВАНИЕ СЛОВА ---
+  // Принимает boolean: true (угадал) / false (ошибся)
+  const handleWordGuessResult = (isCorrect: boolean): 'WIN' | 'WRONG' => {
+    if (isCorrect) {
+      // Угадал! Начисляем очки за сектор (один раз)
       if (typeof currentSectorValue === 'number') {
         addScore(currentSectorValue);
       } else if (currentSectorValue === 'x2') {
         addScore(0, true);
       }
 
+      // Открываем все буквы
       setGuessedLetters(currentQuestion.word.split(''));
       return 'WIN';
     } else {
-      setMessage(`Неправильно! Игрок ${activePlayer.name} выбывает из раунда.`);
-      const newEliminated = [...eliminatedLocalIndices, activePlayerLocalIndex];
-      setEliminatedLocalIndices(newEliminated);
-      setTimeout(() => switchPlayer(newEliminated), 2000);
+      // Не угадал! Переход хода без вылета
+      setMessage(`Неправильно! Ход переходит к следующему игроку.`);
+      setTimeout(() => switchPlayer(), 2000);
       return 'WRONG';
     }
+  };
+
+  const handleChanceRefusal = () => {
+    addScore(300);
+    setMessage('Вы получили 300 очков за отказ от звонка. Называйте букву!');
+    setGameState('GUESS');
   };
 
   const finishCaskets = () => {
@@ -283,10 +290,11 @@ export const useGame = (initialData: GameSaveData | null) => {
     setGameState,
     setMessage,
     handleGuess,
-    handleWordGuess,
+    handleWordGuessResult, // <-- Новое имя функции
     handleSector,
     handlePlusAction,
     handlePrizeDecision,
+    handleChanceRefusal,
     finishCaskets,
     finishPrizeSelection,
     switchPlayer,

@@ -1,12 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { useGame } from './useGame';
+import { useDrum } from './useDrum';
 import { KEY_MAP } from '../constants/gameData';
 import type { GameSaveData } from '../types';
-import { useDrum } from './useDrum';
-import { useGame } from './useGame';
-// import { KEY_MAP } from '../constants';
-// import { GameSaveData } from '../types';
 
-// Секретные хоткеи (ALT + ...)
 const CHEAT_KEYS: Record<string, string | number> = {
   Digit1: 1000,
   Digit2: 'x2',
@@ -22,34 +19,60 @@ export const useGameController = (initialData: GameSaveData | null) => {
 
   const [phoneHint, setPhoneHint] = useState('');
   const [casketResult, setCasketResult] = useState<'win' | 'empty' | null>(null);
-  const [isWordGuessModalOpen, setIsWordGuessModalOpen] = useState(false);
 
   const [isCheatAnimationEnabled, setIsCheatAnimationEnabled] = useState(true);
 
-  const [pendingTarget, setPendingTarget] = useState<string | number | null>(null);
+  // State: signal for UI to start animation
+  const [pendingTargetSignal, setPendingTargetSignal] = useState<string | number | null>(null);
+
+  // Ref: actual spin target (persists safely)
+  const targetRef = useRef<string | number | null>(null);
 
   const game = useGame(initialData);
   const handleDrumStop = (sector: string | number) => game.handleSector(sector);
   const drum = useDrum(handleDrumStop);
 
-  const executeSpin = () => {
-    if (pendingTarget !== null) {
-      drum.spinTo(pendingTarget);
-      setPendingTarget(null);
+  // --- SPIN EXECUTION (called after animation slap) ---
+  const executeSpin = useCallback(() => {
+    if (targetRef.current !== null) {
+      drum.spinTo(targetRef.current);
+      // Clear everything immediately after spin starts
+      targetRef.current = null;
+      setPendingTargetSignal(null);
     } else {
       drum.spin();
     }
-  };
+  }, [drum]);
 
+  // --- CHEAT TRIGGER ---
   const cheatSector = (sector: string | number, forceAnimation = false) => {
     if (drum.isSpinning) return;
+
     if (isCheatAnimationEnabled || forceAnimation) {
-      setPendingTarget(sector);
+      // 1. Save target to Ref
+      targetRef.current = sector;
+      // 2. Set signal for UI
+      setPendingTargetSignal(sector);
     } else {
       game.handleSector(sector);
     }
   };
 
+  // Method to clear signal (called by UI when animation starts)
+  const clearPendingSignal = useCallback(() => {
+    setPendingTargetSignal(null);
+  }, []);
+
+  // --- SAFETY GUARD ---
+  // If game state changes away from SPIN, ensure no pending cheats remain
+  useEffect(() => {
+    if (game.gameState !== 'SPIN') {
+      setPendingTargetSignal(null);
+      targetRef.current = null;
+    }
+  }, [game.gameState]);
+
+  // --- KEYBOARD HANDLER ---
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.altKey && CHEAT_KEYS[e.code]) {
@@ -58,20 +81,52 @@ export const useGameController = (initialData: GameSaveData | null) => {
         return;
       }
 
-      if (isModalOpen || isWordGuessModalOpen) return;
+      if (isModalOpen) {
+        if (modalType === 'PRIZE') {
+          if (e.code === 'Enter') onPrizeChoice(true);
+          if (e.code === 'Escape') onPrizeChoice(false);
+        }
+        if (modalType === 'PHONE') {
+          if (e.code === 'Enter') onPhoneEnd();
+          if (e.code === 'Escape') onChanceRefuse();
+        }
+        if (modalType === 'CASKET') {
+          if (casketResult !== null && e.code === 'Enter') onCasketFinish();
+        }
+        if (modalType === 'WIN') {
+          if (e.code === 'Enter') startNextRound();
+        }
+        return;
+      }
 
       if (e.code === 'Space') {
         e.preventDefault();
         return;
       }
 
-      if (game.gameState !== 'GUESS') return;
+      if (game.gameState === 'GUESS') {
+        if (e.altKey) {
+          if (e.code === 'KeyW') {
+            e.preventDefault();
+            const res = game.handleWordGuessResult(true);
+            if (res === 'WIN') {
+              setModalType('WIN');
+              setIsModalOpen(true);
+            }
+          }
+          if (e.code === 'KeyE') {
+            e.preventDefault();
+            game.handleWordGuessResult(false);
+          }
+          return;
+        }
 
-      let letter = '';
-      if (/^[А-ЯЁа-яё]$/.test(e.key)) letter = e.key.toUpperCase();
-      else if (KEY_MAP[e.code]) letter = KEY_MAP[e.code];
+        let letter = '';
+        if (/^[А-ЯЁа-яё]$/.test(e.key)) letter = e.key.toUpperCase();
+        else if (KEY_MAP[e.code]) letter = KEY_MAP[e.code];
 
-      if (letter) onGuessLetter(letter);
+        if (letter) onGuessLetter(letter);
+      }
     };
 
     window.addEventListener('keydown', handleKeyDown);
@@ -79,12 +134,13 @@ export const useGameController = (initialData: GameSaveData | null) => {
   }, [
     game.gameState,
     isModalOpen,
-    isWordGuessModalOpen,
     drum.isSpinning,
     game.guessedLetters,
     isCheatAnimationEnabled,
+    casketResult,
   ]);
 
+  // --- ACTIONS ---
   const onGuessLetter = (letter: string) => {
     const result = game.handleGuess(letter);
     if (result === 'WIN') {
@@ -92,16 +148,6 @@ export const useGameController = (initialData: GameSaveData | null) => {
       setIsModalOpen(true);
     }
   };
-
-  const onWordGuess = (word: string) => {
-    setIsWordGuessModalOpen(false);
-    const result = game.handleWordGuess(word);
-    if (result === 'WIN') {
-      setModalType('WIN');
-      setIsModalOpen(true);
-    }
-  };
-
   const onLetterClick = (index: number) => {
     if (game.gameState === 'PLUS_SELECTION') {
       game.handlePlusAction(index);
@@ -111,41 +157,32 @@ export const useGameController = (initialData: GameSaveData | null) => {
       }
     }
   };
-
   const onPrizeChoice = (take: boolean) => {
     const result = game.handlePrizeDecision(take);
     setIsModalOpen(false);
-    if (result.status === 'TOOK_PRIZE') {
+    if (result.status === 'TOOK_PRIZE')
       setTimeout(() => game.switchPlayer(result.newEliminated), 2000);
-    }
   };
-
   const onPhoneEnd = () => {
     setIsModalOpen(false);
     game.setMessage('Друг дал подсказку. Ваш ход!');
     game.setGameState('GUESS');
   };
-
+  const onChanceRefuse = () => {
+    setIsModalOpen(false);
+    game.handleChanceRefusal();
+  };
   const onCasketChoice = () => {
     const isWin = Math.random() > 0.5;
     setCasketResult(isWin ? 'win' : 'empty');
-    setTimeout(() => {
-      setIsModalOpen(false);
-      setCasketResult(null);
-      game.finishCaskets();
-    }, 2000);
   };
-
   const onCasketFinish = () => {
     setIsModalOpen(false);
     game.finishCaskets();
   };
-
-  // Обработчик завершения выбора призов
   const onPrizeShopFinish = (ids: number[]) => {
     game.finishPrizeSelection(ids);
   };
-
   const startNextRound = () => {
     game.nextLevel();
     setIsModalOpen(false);
@@ -189,7 +226,7 @@ export const useGameController = (initialData: GameSaveData | null) => {
     debug: {
       isCheatAnimationEnabled,
       toggleCheatAnimation: () => setIsCheatAnimationEnabled((prev) => !prev),
-      pendingTarget,
+      pendingTarget: pendingTargetSignal, // Returning signal instead of ref
     },
     actions: {
       spinDrum: executeSpin,
@@ -199,16 +236,17 @@ export const useGameController = (initialData: GameSaveData | null) => {
       endPhoneCall: onPhoneEnd,
       casketChoice: onCasketChoice,
       casketFinish: onCasketFinish,
-      finishPrizeShop: onPrizeShopFinish, // <-- НОВЫЙ ЭКШЕН
+      finishPrizeShop: onPrizeShopFinish,
       closeModal: () => setIsModalOpen(false),
       nextRound: startNextRound,
       cheatSector,
+      clearPendingSignal, // New action
     },
     wordModal: {
-      isOpen: isWordGuessModalOpen,
-      open: () => setIsWordGuessModalOpen(true),
-      close: () => setIsWordGuessModalOpen(false),
-      submit: onWordGuess,
+      isOpen: false,
+      open: () => {},
+      close: () => {},
+      submit: () => {},
     },
     modal: {
       isOpen: isModalOpen,

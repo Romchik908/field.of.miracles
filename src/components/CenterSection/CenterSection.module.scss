@@ -18,6 +18,7 @@
 
   .wordSection {
     margin-bottom: 4vh;
+    margin-top: 20vh;
     transform: scale(1.1);
     position: relative;
     z-index: 2;
@@ -37,36 +38,17 @@
   }
 
   .questionBox {
-    font-size: 1.5rem;
+    font-size: 1.8rem;
     text-align: center;
     color: #e0e1dd;
-    background: rgba(255, 255, 255, 0.05);
-    padding: 25px 40px;
-    border-radius: 16px;
-    border-bottom: 4px solid #fca311;
+
+    /* СТИЛЬ ВОПРОСА ПОД ПРОТОТИП */
+    background: transparent; /* Темный */
+    border-bottom: 2px solid white;
+
+    padding: 30px 50px;
     margin-bottom: 10px;
     width: 100%;
     line-height: 1.3;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-    backdrop-filter: blur(5px);
-
-    @media (max-height: 800px) {
-      font-size: 1.2rem;
-      padding: 15px 25px;
-    }
-  }
-
-  @media (max-width: 600px) {
-    .wordSection {
-      transform: scale(0.8);
-      margin-bottom: 10px;
-    }
-    .questionBox {
-      font-size: 1.1rem;
-      padding: 10px;
-    }
-    .bottomSection {
-      gap: 10px;
-    }
   }
 }

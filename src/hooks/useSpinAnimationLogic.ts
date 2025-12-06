@@ -13,6 +13,7 @@ export const useSpinAnimationLogic = () => {
   const handleStartSpinning = () => {
     if (!canSpin) return;
 
+    // Logic to find avatar position remains here
     const activeIndex = gameData.activePlayerIndex;
     const avatarEl = document.getElementById(`player-avatar-${activeIndex}`);
 
@@ -30,12 +31,19 @@ export const useSpinAnimationLogic = () => {
     setIsAnimating(true);
   };
 
+  // --- AUTO-START FOR CHEATS (FIXED) ---
   useEffect(() => {
+    // If a cheat signal exists AND we are allowed to spin
     if (debug.pendingTarget !== null && canSpin) {
+      // 1. Immediately consume the signal so it doesn't fire again later
+      actions.clearPendingSignal();
+
+      // 2. Start the animation
       handleStartSpinning();
     }
-  }, [debug.pendingTarget, canSpin]);
+  }, [debug.pendingTarget, canSpin]); // Dependencies updated
 
+  // --- SPACEBAR HANDLER ---
   useEffect(() => {
     const handleSpace = (e: KeyboardEvent) => {
       if (e.code === 'Space' && !modal.isOpen) {

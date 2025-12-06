@@ -6,7 +6,7 @@ import styles from './CenterSection.module.scss';
 
 export const CenterSection: React.FC = () => {
   const { controller } = useGameContext();
-  const { gameData, actions, wordModal } = controller;
+  const { gameData, actions } = controller;
 
   return (
     <div className={styles.centerLayer}>
@@ -26,7 +26,6 @@ export const CenterSection: React.FC = () => {
           gameState={gameData.gameState}
           message={gameData.message}
           onGuess={actions.guessLetter}
-          onWordGuessClick={wordModal.open}
         />
       </div>
     </div>
