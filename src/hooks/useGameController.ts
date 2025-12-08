@@ -22,65 +22,56 @@ export const useGameController = (initialData: GameSaveData | null) => {
 
   const [isCheatAnimationEnabled, setIsCheatAnimationEnabled] = useState(true);
 
-  // State: signal for UI to start animation
-  const [pendingTargetSignal, setPendingTargetSignal] = useState<string | number | null>(null);
-
-  // Ref: actual spin target (persists safely)
+  const [pendingTarget, setPendingTarget] = useState<{ val: string | number; id: number } | null>(
+    null,
+  );
   const targetRef = useRef<string | number | null>(null);
 
   const game = useGame(initialData);
   const handleDrumStop = (sector: string | number) => game.handleSector(sector);
   const drum = useDrum(handleDrumStop);
 
-  // --- SPIN EXECUTION (called after animation slap) ---
   const executeSpin = useCallback(() => {
     if (targetRef.current !== null) {
       drum.spinTo(targetRef.current);
-      // Clear everything immediately after spin starts
       targetRef.current = null;
-      setPendingTargetSignal(null);
     } else {
       drum.spin();
     }
   }, [drum]);
 
-  // --- CHEAT TRIGGER ---
   const cheatSector = (sector: string | number, forceAnimation = false) => {
     if (drum.isSpinning) return;
 
     if (isCheatAnimationEnabled || forceAnimation) {
-      // 1. Save target to Ref
       targetRef.current = sector;
-      // 2. Set signal for UI
-      setPendingTargetSignal(sector);
+      setPendingTarget({ val: sector, id: Date.now() });
     } else {
       game.handleSector(sector);
     }
   };
 
-  // Method to clear signal (called by UI when animation starts)
-  const clearPendingSignal = useCallback(() => {
-    setPendingTargetSignal(null);
+  const consumeCheatSignal = useCallback(() => {
+    setPendingTarget(null);
   }, []);
 
-  // --- SAFETY GUARD ---
-  // If game state changes away from SPIN, ensure no pending cheats remain
   useEffect(() => {
     if (game.gameState !== 'SPIN') {
-      setPendingTargetSignal(null);
       targetRef.current = null;
+      setPendingTarget(null);
     }
   }, [game.gameState]);
 
-  // --- KEYBOARD HANDLER ---
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // 0. ЧИТЫ
       if (e.altKey && CHEAT_KEYS[e.code]) {
         e.preventDefault();
         cheatSector(CHEAT_KEYS[e.code], true);
         return;
       }
 
+      // 1. МОДАЛКИ
       if (isModalOpen) {
         if (modalType === 'PRIZE') {
           if (e.code === 'Enter') onPrizeChoice(true);
@@ -91,7 +82,9 @@ export const useGameController = (initialData: GameSaveData | null) => {
           if (e.code === 'Escape') onChanceRefuse();
         }
         if (modalType === 'CASKET') {
-          if (casketResult !== null && e.code === 'Enter') onCasketFinish();
+          if (e.code === 'Enter') {
+            onCasketFinish();
+          }
         }
         if (modalType === 'WIN') {
           if (e.code === 'Enter') startNextRound();
@@ -99,11 +92,13 @@ export const useGameController = (initialData: GameSaveData | null) => {
         return;
       }
 
+      // 2. ПРОБЕЛ
       if (e.code === 'Space') {
         e.preventDefault();
         return;
       }
 
+      // 3. ВВОД БУКВЫ
       if (game.gameState === 'GUESS') {
         if (e.altKey) {
           if (e.code === 'KeyW') {
@@ -141,6 +136,7 @@ export const useGameController = (initialData: GameSaveData | null) => {
   ]);
 
   // --- ACTIONS ---
+
   const onGuessLetter = (letter: string) => {
     const result = game.handleGuess(letter);
     if (result === 'WIN') {
@@ -148,41 +144,53 @@ export const useGameController = (initialData: GameSaveData | null) => {
       setIsModalOpen(true);
     }
   };
+
+  // --- ИСПРАВЛЕННЫЙ МЕТОД ДЛЯ КЛИКА ПО БУКВЕ (+) ---
   const onLetterClick = (index: number) => {
     if (game.gameState === 'PLUS_SELECTION') {
-      game.handlePlusAction(index);
-      if (game.checkWin()) {
+      // Получаем результат из хука useGame
+      const result = game.handlePlusAction(index);
+
+      if (result === 'WIN') {
         setModalType('WIN');
         setIsModalOpen(true);
       }
     }
   };
+
   const onPrizeChoice = (take: boolean) => {
     const result = game.handlePrizeDecision(take);
     setIsModalOpen(false);
-    if (result.status === 'TOOK_PRIZE')
+    if (result.status === 'TOOK_PRIZE') {
       setTimeout(() => game.switchPlayer(result.newEliminated), 2000);
+    }
   };
+
   const onPhoneEnd = () => {
     setIsModalOpen(false);
     game.setMessage('Друг дал подсказку. Ваш ход!');
     game.setGameState('GUESS');
   };
+
   const onChanceRefuse = () => {
     setIsModalOpen(false);
     game.handleChanceRefusal();
   };
+
   const onCasketChoice = () => {
     const isWin = Math.random() > 0.5;
     setCasketResult(isWin ? 'win' : 'empty');
   };
+
   const onCasketFinish = () => {
     setIsModalOpen(false);
     game.finishCaskets();
   };
+
   const onPrizeShopFinish = (ids: number[]) => {
     game.finishPrizeSelection(ids);
   };
+
   const startNextRound = () => {
     game.nextLevel();
     setIsModalOpen(false);
@@ -226,12 +234,12 @@ export const useGameController = (initialData: GameSaveData | null) => {
     debug: {
       isCheatAnimationEnabled,
       toggleCheatAnimation: () => setIsCheatAnimationEnabled((prev) => !prev),
-      pendingTarget: pendingTargetSignal, // Returning signal instead of ref
+      cheatSignal: pendingTarget,
     },
     actions: {
       spinDrum: executeSpin,
       guessLetter: onGuessLetter,
-      clickBoardLetter: onLetterClick,
+      clickBoardLetter: onLetterClick, // Используем обновленную версию
       prizeChoice: onPrizeChoice,
       endPhoneCall: onPhoneEnd,
       casketChoice: onCasketChoice,
@@ -240,13 +248,7 @@ export const useGameController = (initialData: GameSaveData | null) => {
       closeModal: () => setIsModalOpen(false),
       nextRound: startNextRound,
       cheatSector,
-      clearPendingSignal, // New action
-    },
-    wordModal: {
-      isOpen: false,
-      open: () => {},
-      close: () => {},
-      submit: () => {},
+      consumeCheatSignal,
     },
     modal: {
       isOpen: isModalOpen,

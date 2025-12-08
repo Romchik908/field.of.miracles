@@ -9,7 +9,7 @@ export const GameModals: React.FC = () => {
 
   if (!modal.isOpen) return null;
 
-  if (['WIN', 'PRIZE', 'CASKET'].includes(modal.type)) return null;
+  if (['WIN', 'PRIZE', 'CASKET', 'PHONE'].includes(modal.type)) return null;
 
   const renderContent = () => {
     switch (modal.type) {

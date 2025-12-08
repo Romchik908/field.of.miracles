@@ -1,5 +1,5 @@
-import { Button, Checkbox } from '@skbkontur/react-ui';
 import React from 'react';
+import { Button, Checkbox } from '@skbkontur/react-ui';
 import { useGameContext } from '../../context/GameContext';
 import styles from './DebugPanel.module.scss';
 
@@ -18,12 +18,22 @@ export const DebugPanel: React.FC = () => {
   return (
     <div className={styles.panel}>
       <div className={styles.header}>Debug Control (Alt + Key)</div>
+
       <Checkbox checked={debug.isCheatAnimationEnabled} onValueChange={debug.toggleCheatAnimation}>
         Включить анимацию
       </Checkbox>
+
       <div className={styles.buttonsRow}>
         {cheats.map((c) => (
-          <Button key={c.label} onClick={() => actions.cheatSector(c.val)}>
+          <Button
+            key={c.label}
+            onClick={(e) => {
+              // ВАЖНО: Снимаем фокус с кнопки сразу после нажатия.
+              // Теперь Enter не будет нажимать её повторно.
+              e.currentTarget.blur();
+              actions.cheatSector(c.val);
+            }}
+          >
             {c.label}
           </Button>
         ))}

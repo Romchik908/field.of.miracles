@@ -107,9 +107,9 @@ export const useGame = (initialData: GameSaveData | null) => {
       );
       setCurrentSectorValue(null);
     } else {
-      setFinalists((prev) => [...prev, winner]);
       setMessage(`ПОБЕДИТЕЛЬ СУПЕРИГРЫ: ${winner.name}!`);
-      setGameState('PRIZE_SHOP');
+      // setGameState('PRIZE_SHOP');
+      // setGameState('')
     }
   };
 
@@ -212,22 +212,16 @@ export const useGame = (initialData: GameSaveData | null) => {
     }
   };
 
-  // --- ИЗМЕНЕНО: РУЧНОЕ УГАДЫВАНИЕ СЛОВА ---
-  // Принимает boolean: true (угадал) / false (ошибся)
   const handleWordGuessResult = (isCorrect: boolean): 'WIN' | 'WRONG' => {
     if (isCorrect) {
-      // Угадал! Начисляем очки за сектор (один раз)
       if (typeof currentSectorValue === 'number') {
         addScore(currentSectorValue);
       } else if (currentSectorValue === 'x2') {
         addScore(0, true);
       }
-
-      // Открываем все буквы
       setGuessedLetters(currentQuestion.word.split(''));
       return 'WIN';
     } else {
-      // Не угадал! Переход хода без вылета
       setMessage(`Неправильно! Ход переходит к следующему игроку.`);
       setTimeout(() => switchPlayer(), 2000);
       return 'WRONG';
@@ -251,13 +245,27 @@ export const useGame = (initialData: GameSaveData | null) => {
     setMessage('Отличный выбор! Игра завершена.');
   };
 
-  const handlePlusAction = (index: number) => {
+  // --- ИСПРАВЛЕННАЯ ЛОГИКА ПЛЮСА ---
+  const handlePlusAction = (index: number): 'WIN' | 'CONTINUE' => {
     const letter = currentQuestion.word[index];
-    if (guessedLetters.includes(letter)) return;
+
+    // Если буква уже была открыта, ничего не делаем
+    if (guessedLetters.includes(letter)) return 'CONTINUE';
+
     const newGuessed = [...guessedLetters, letter];
     setGuessedLetters(newGuessed);
+
+    // ВАЖНО: Проверяем победу сразу здесь, с новым массивом
+    const isWin = currentQuestion.word.split('').every((char) => newGuessed.includes(char));
+
+    if (isWin) {
+      // Не ставим SPIN, вернем WIN чтобы контроллер открыл модалку
+      return 'WIN';
+    }
+
     setMessage(`Открыта буква ${letter}! Вращайте барабан.`);
     setGameState('SPIN');
+    return 'CONTINUE';
   };
 
   const handlePrizeDecision = (takePrize: boolean) => {
@@ -290,9 +298,9 @@ export const useGame = (initialData: GameSaveData | null) => {
     setGameState,
     setMessage,
     handleGuess,
-    handleWordGuessResult, // <-- Новое имя функции
+    handleWordGuessResult,
     handleSector,
-    handlePlusAction,
+    handlePlusAction, // <-- Теперь возвращает статус
     handlePrizeDecision,
     handleChanceRefusal,
     finishCaskets,

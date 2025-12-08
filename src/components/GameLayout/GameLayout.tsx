@@ -70,6 +70,7 @@ export const GameLayout: React.FC = () => {
       {isAnimating && (
         <SpinAnimation
           avatarUrl={avatarUrl}
+          isAnimating={isAnimating}
           startPos={animStartPos}
           onSpinStart={onRealSpin}
           onAnimationEnd={() => setIsAnimating(false)}

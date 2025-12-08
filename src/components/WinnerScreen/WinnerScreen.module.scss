@@ -6,7 +6,7 @@
     width: 100vw;
     height: 100vh;
     z-index: 9999;
-    background: rgba(13, 27, 42, 0.95);
+    background: rgba(0, 0, 0, 0.95);
     backdrop-filter: blur(10px);
     display: flex;
     justify-content: center;
@@ -19,7 +19,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    background: linear-gradient(135deg, #1b263b 0%, #0d1b2a 100%);
+    background: black;
     padding: 40px 60px;
     border-radius: 30px;
     border: 4px solid #fca311;
@@ -30,7 +30,7 @@
     opacity: 0;
 
     &.superWin {
-      background: linear-gradient(135deg, #1b263b 0%, #0d1b2a 100%);
+      background: black;
 
       border: 6px solid #ffd700;
       box-shadow: 0 0 100px rgba(255, 215, 0, 0.6);

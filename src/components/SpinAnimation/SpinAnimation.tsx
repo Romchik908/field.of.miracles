@@ -3,6 +3,7 @@ import styles from './SpinAnimation.module.scss';
 
 interface Props {
   avatarUrl: string;
+  isAnimating: boolean;
   startPos: { top: number; left: number; width: number }; // Новые пропсы
   onSpinStart: () => void;
   onAnimationEnd: () => void;
@@ -16,6 +17,7 @@ export const SpinAnimation: React.FC<Props> = ({
 }) => {
   useEffect(() => {
     const spinTimer = setTimeout(() => {
+      console.log('spin timer');
       onSpinStart();
     }, 1000);
 
@@ -27,7 +29,7 @@ export const SpinAnimation: React.FC<Props> = ({
       clearTimeout(spinTimer);
       clearTimeout(endTimer);
     };
-  }, [onSpinStart, onAnimationEnd]);
+  }, []);
 
   const customStyles = {
     '--start-top': `${startPos.top}px`,
