@@ -43,12 +43,14 @@ export const useSpinAnimationLogic = () => {
     const handleSpace = (e: KeyboardEvent) => {
       if (e.code === 'Space' && !modal.isOpen) {
         e.preventDefault();
-        handleStartSpinning();
+        if (controller.gameData.isQuestionVisible) {
+          handleStartSpinning();
+        }
       }
     };
     window.addEventListener('keydown', handleSpace);
     return () => window.removeEventListener('keydown', handleSpace);
-  }, [canSpin, modal.isOpen]);
+  }, [canSpin, modal.isOpen, controller.gameData.isQuestionVisible]);
 
   return {
     isAnimating,

@@ -19,9 +19,17 @@ export const useGame = (initialData: GameSaveData | null) => {
   const [wonPrizesIds, setWonPrizesIds] = useState<number[]>(initialData?.wonPrizesIds ?? []);
 
   const [gameState, setGameState] = useState<GameState>(initialData?.gameState ?? 'SPIN');
-  const [message, setMessage] = useState(initialData ? 'Игра восстановлена!' : 'Вращайте барабан!');
   const [currentSectorValue, setCurrentSectorValue] = useState<string | number | null>(
     initialData?.currentSectorValue ?? null,
+  );
+
+  // --- НОВОЕ: Видимость вопроса ---
+  // Если есть сохранение — считаем, что вопрос уже открыт, иначе — скрыт
+  const [isQuestionVisible, setIsQuestionVisible] = useState(!!initialData);
+
+  // Сообщение по умолчанию зависит от наличия сохранения
+  const [message, setMessage] = useState(
+    initialData ? 'Игра восстановлена!' : 'Нажмите ПРОБЕЛ, чтобы открыть вопрос',
   );
 
   useEffect(() => {
@@ -36,6 +44,8 @@ export const useGame = (initialData: GameSaveData | null) => {
       setWonPrizesIds(initialData.wonPrizesIds || []);
       setGameState(initialData.gameState);
       setCurrentSectorValue(initialData.currentSectorValue);
+
+      setIsQuestionVisible(true); // При загрузке показываем вопрос
 
       if (initialData.gameState === 'GUESS') setMessage('Игра восстановлена! Называйте букву.');
       else if (initialData.gameState === 'SPIN')
@@ -54,7 +64,9 @@ export const useGame = (initialData: GameSaveData | null) => {
       setWonPrizesIds([]);
       setGameState('SPIN');
       setCurrentSectorValue(null);
-      setMessage('Вращайте барабан!');
+
+      setIsQuestionVisible(false); // Скрываем вопрос при новой игре
+      setMessage('Нажмите ПРОБЕЛ, чтобы открыть вопрос');
     }
   }, [initialData]);
 
@@ -72,6 +84,12 @@ export const useGame = (initialData: GameSaveData | null) => {
   const activePlayer = currentPlayers[activePlayerLocalIndex] || currentPlayers[0];
 
   // --- ЛОГИКА ---
+
+  // Функция для открытия вопроса (вызывается по первому пробелу)
+  const revealQuestion = () => {
+    setIsQuestionVisible(true);
+    setMessage('Вращайте барабан!');
+  };
 
   const switchPlayer = (currentEliminated = eliminatedLocalIndices) => {
     setConsecutiveGuesses(0);
@@ -100,16 +118,17 @@ export const useGame = (initialData: GameSaveData | null) => {
       setActivePlayerLocalIndex(0);
       setConsecutiveGuesses(0);
       setGameState('SPIN');
+      setCurrentSectorValue(null);
+
+      setIsQuestionVisible(false); // Скрываем вопрос в начале нового раунда
       setMessage(
         roundIndex === 2
-          ? 'ФИНАЛ! Играют победители!'
-          : `Раунд ${roundIndex + 2}! Новая тройка игроков.`,
+          ? 'ФИНАЛ! Нажмите ПРОБЕЛ для вопроса.'
+          : `Раунд ${roundIndex + 2}! Нажмите ПРОБЕЛ для вопроса.`,
       );
-      setCurrentSectorValue(null);
     } else {
       setMessage(`ПОБЕДИТЕЛЬ СУПЕРИГРЫ: ${winner.name}!`);
-      // setGameState('PRIZE_SHOP');
-      // setGameState('')
+      // setGameState('PRIZE_SHOP'); // Раскомментируйте, если логика магазина готова
     }
   };
 
@@ -186,6 +205,7 @@ export const useGame = (initialData: GameSaveData | null) => {
       const count = currentQuestion.word
         .split('')
         .filter((char) => char === normalizedLetter).length;
+
       if (typeof currentSectorValue === 'number') addScore(currentSectorValue * count);
       else if (currentSectorValue === 'x2') addScore(0, true);
 
@@ -228,8 +248,11 @@ export const useGame = (initialData: GameSaveData | null) => {
     }
   };
 
+  // --- ИСПРАВЛЕННОЕ НАЧИСЛЕНИЕ 300 ОЧКОВ ---
   const handleChanceRefusal = () => {
     addScore(300);
+    // Важно сбросить сектор, чтобы следующая буква не умножалась на "Ш"
+    setCurrentSectorValue(0);
     setMessage('Вы получили 300 очков за отказ от звонка. Называйте букву!');
     setGameState('GUESS');
   };
@@ -245,21 +268,17 @@ export const useGame = (initialData: GameSaveData | null) => {
     setMessage('Отличный выбор! Игра завершена.');
   };
 
-  // --- ИСПРАВЛЕННАЯ ЛОГИКА ПЛЮСА ---
   const handlePlusAction = (index: number): 'WIN' | 'CONTINUE' => {
     const letter = currentQuestion.word[index];
 
-    // Если буква уже была открыта, ничего не делаем
     if (guessedLetters.includes(letter)) return 'CONTINUE';
 
     const newGuessed = [...guessedLetters, letter];
     setGuessedLetters(newGuessed);
 
-    // ВАЖНО: Проверяем победу сразу здесь, с новым массивом
     const isWin = currentQuestion.word.split('').every((char) => newGuessed.includes(char));
 
     if (isWin) {
-      // Не ставим SPIN, вернем WIN чтобы контроллер открыл модалку
       return 'WIN';
     }
 
@@ -276,6 +295,7 @@ export const useGame = (initialData: GameSaveData | null) => {
       return { status: 'TOOK_PRIZE', newEliminated };
     } else {
       setMessage('Отказ от приза. Называйте букву!');
+      setCurrentSectorValue(300);
       setGameState('GUESS');
       return { status: 'REFUSED', newEliminated: eliminatedLocalIndices };
     }
@@ -295,12 +315,17 @@ export const useGame = (initialData: GameSaveData | null) => {
     currentSectorValue,
     eliminatedPlayers: eliminatedLocalIndices,
     wonPrizesIds,
+
+    // Экспорт состояния и функции видимости вопроса
+    isQuestionVisible,
+    revealQuestion,
+
     setGameState,
     setMessage,
     handleGuess,
     handleWordGuessResult,
     handleSector,
-    handlePlusAction, // <-- Теперь возвращает статус
+    handlePlusAction,
     handlePrizeDecision,
     handleChanceRefusal,
     finishCaskets,

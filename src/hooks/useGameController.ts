@@ -1,8 +1,9 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { useGame } from './useGame';
-import { useDrum } from './useDrum';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { KEY_MAP } from '../constants/gameData';
 import type { GameSaveData } from '../types';
+import { useDrum } from './useDrum';
+import { useGame } from './useGame';
+import { useGameSounds } from './useGameSounds';
 
 const CHEAT_KEYS: Record<string, string | number> = {
   Digit1: 1000,
@@ -31,7 +32,10 @@ export const useGameController = (initialData: GameSaveData | null) => {
   const handleDrumStop = (sector: string | number) => game.handleSector(sector);
   const drum = useDrum(handleDrumStop);
 
+  const { playSound } = useGameSounds();
+
   const executeSpin = useCallback(() => {
+    playSound('spin');
     if (targetRef.current !== null) {
       drum.spinTo(targetRef.current);
       targetRef.current = null;
@@ -95,6 +99,12 @@ export const useGameController = (initialData: GameSaveData | null) => {
       // 2. ПРОБЕЛ
       if (e.code === 'Space') {
         e.preventDefault();
+
+        if (!game.isQuestionVisible) {
+          game.revealQuestion();
+          // playSound('sector'); // Просто звук "чпоньк"
+          return;
+        }
         return;
       }
 
@@ -106,11 +116,13 @@ export const useGameController = (initialData: GameSaveData | null) => {
             const res = game.handleWordGuessResult(true);
             if (res === 'WIN') {
               setModalType('WIN');
+              playSound('win');
               setIsModalOpen(true);
             }
           }
           if (e.code === 'KeyE') {
             e.preventDefault();
+            playSound('wrong');
             game.handleWordGuessResult(false);
           }
           return;
@@ -139,8 +151,14 @@ export const useGameController = (initialData: GameSaveData | null) => {
 
   const onGuessLetter = (letter: string) => {
     const result = game.handleGuess(letter);
+
+    if (result === 'CORRECT') playSound('correct');
+    if (result === 'WRONG' || result === 'ALREADY') playSound('wrong');
+    // if (result === 'CASKETS') playSound('correct'); // или спец звук
+
     if (result === 'WIN') {
       setModalType('WIN');
+      playSound('win');
       setIsModalOpen(true);
     }
   };
@@ -150,9 +168,11 @@ export const useGameController = (initialData: GameSaveData | null) => {
     if (game.gameState === 'PLUS_SELECTION') {
       // Получаем результат из хука useGame
       const result = game.handlePlusAction(index);
+      playSound('correct');
 
       if (result === 'WIN') {
         setModalType('WIN');
+        playSound('win');
         setIsModalOpen(true);
       }
     }

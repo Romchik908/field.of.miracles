@@ -20,7 +20,11 @@ export const CenterSection: React.FC = () => {
       </div>
 
       <div className={styles.bottomSection}>
-        <div className={styles.questionBox}>{gameData.question}</div>
+        {gameData.isQuestionVisible ? (
+          <div className={styles.questionBox}>{gameData.question}</div>
+        ) : (
+          <span style={{ opacity: 0.5, letterSpacing: 2 }}>ВОПРОС РАУНДА (Нажмите ПРОБЕЛ)</span>
+        )}
 
         <Controls
           gameState={gameData.gameState}
