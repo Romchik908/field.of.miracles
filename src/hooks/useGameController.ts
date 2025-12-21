@@ -166,6 +166,7 @@ export const useGameController = (initialData: GameSaveData | null) => {
   // --- ИСПРАВЛЕННЫЙ МЕТОД ДЛЯ КЛИКА ПО БУКВЕ (+) ---
   const onLetterClick = (index: number) => {
     if (game.gameState === 'PLUS_SELECTION') {
+      // Получаем результат из хука useGame
       const result = game.handlePlusAction(index);
       playSound('correct');
 
