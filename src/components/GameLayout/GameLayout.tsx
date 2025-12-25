@@ -2,7 +2,7 @@ import React from 'react';
 import { useGameContext } from '../../context/GameContext';
 import { useSpinAnimationLogic } from '../../hooks/useSpinAnimationLogic';
 import { CenterSection } from '../CenterSection/CenterSection';
-import { DebugPanel } from '../DebugPanel/DebugPanel';
+// import { DebugPanel } from '../DebugPanel/DebugPanel';
 import { DrumSection } from '../DrumSection/DrumSection';
 import { GameOverlays } from '../GameOverlays/GameOverlays';
 import { Scoreboard } from '../Scoreboard/Scoreboard';
