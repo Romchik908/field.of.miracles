@@ -93,8 +93,8 @@ export const GameLayout: React.FC = () => {
       <DrumSection canSpin={canSpin} onSpinClick={handleStartSpinning} />
 
       <CenterSection />
-
-      <DebugPanel />
+      {/* это только ради удобного тестирования, в проде такого быть не должно */}
+      {/* <DebugPanel /> */}
     </div>
   );
 };
